@@ -1,5 +1,18 @@
+from typeguard import typechecked
+
 class Controller():
-    def __init__(self, ctype, Ms, n_kp, n_ti, n_td, kp, ti, td):
+    @typechecked
+    def __init__(
+            self,
+            ctype: str,
+            Ms: str,
+            n_kp: float,
+            n_ti: float,
+            n_td: float,
+            kp: float,
+            ti: float,
+            td: float
+    ):
         self.ctype = ctype
         self.Ms = Ms
         self.n_kp = n_kp

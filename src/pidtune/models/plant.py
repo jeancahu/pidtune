@@ -1,35 +1,45 @@
 from ..rules import frac_order as _frac_order # Only rule it has by now
+from ..utils.cronePadula2 import cronePadula2
 
 #import numpy as np
 #import matplotlib
 #from scipy import signal
 #import control
 #from oct2py import Oct2py as o2p # ??
+from typeguard import typechecked
 from subprocess import Popen, PIPE, STDOUT
 from os import path, remove, rmdir
 import tempfile
 import pandas as pd
 import json
 
-class FractionalOrderModel():
-    def __init__(self,
-                 alpha=0,                 # Fractional order   (alpha)
-                 time_constant=0,         # Main time constant (T)
-                 proportional_constant=0, # Gain               (K)
-                 dead_time_constant=0,    # Dead time          (L)
+from control import tf, step_response # Transfer function
+from control.matlab import zpk2tf as zpk
 
-                 time_vector=[], # Time vector to identify the plant model
-                 step_vector=[], # Step vector to identify the plant model
-                 resp_vector=[]  # Open-loop system response to identify the plant model
+class FractionalOrderModel(): # TODO herence from generic plant model
+    @typechecked
+    def __init__(self,
+                 ############### Raw data to identify the plant model
+                 time_vector: list=[], # Time vector to identify the plant model
+                 step_vector: list=[], # Step vector to identify the plant model
+                 resp_vector: list=[],  # Open-loop system response to identify the plant model
+
+                 ############### Fractional order model in case it was calculated
+                 alpha: float = 0,                 # Fractional order   (alpha)
+
+                 ############### Common models constants
+                 time_constant: float = 0,         # Main time constant (T)
+                 proportional_constant: float = 0, # Gain               (K)
+                 dead_time_constant: float = 0,    # Dead time          (L)
                  ):
 
         ## Identify the plant model
         if (alpha or time_constant or proportional_constant or dead_time_constant):
             try:
-                self.alpha = float(alpha)
-                self.T     = float(time_constant)
-                self.K     = float(proportional_constant)
-                self.L     = float(dead_time_constant)
+                self.alpha = alpha
+                self.T     = time_constant
+                self.K     = proportional_constant
+                self.L     = dead_time_constant
                 self.IAE   = 0.0
             except Exception:
                 raise ValueError("Plant model wrong input values")
@@ -137,6 +147,40 @@ in_v3={};                                % controled variable vector
         ## Tune controllers
         self.controllers = self.tune_controllers()
 
+    def tf (self):
+        """ Returns a tuple (transfer function, plant delay)
+        """
+
+        # Using CRONE Oustaloup to define Pm
+        if (self.alpha <1):
+            zz, pp, kk = cronePadula2(
+                k = 1,
+                v = -self.alpha,
+            )
+
+            mod = 1/zpk(zz,pp,kk)
+        else:
+            zz, pp, kk = cronePadula2(
+                k = 1,
+                v = self.alpha,
+            )
+            mod = zpk(zz,pp,kk)
+
+        ## Convert mod into tf
+        mod = tf(mod[0], mod[1])
+
+        # self.tf = K*exp(-L*s)/(T*mod+1);
+        self.tf = self.K/(self.T*mod+1)
+
+
+        #### TODO
+        # ts, xs = step_response( self.tf )
+        # import csv
+        # with open('some.csv', 'w') as f:
+        #     writer = csv.writer(f)
+        #     writer.writerows(zip(ts, xs))
+
+
     def tune_controllers(self):
         controllers = []
         for ctype in _frac_order.valid_controllers:
@@ -155,6 +199,7 @@ in_v3={};                                % controled variable vector
         }
 
     def toResponse(self):
+        # TODO: if response is not defined it needs be calculated
         return {
             'time'    :   self.time_vector,       # Time vector
             'step'    :   self.step_vector,       # Step vector

@@ -3,8 +3,7 @@
 
 import io
 from os import system as bash, path
-from sys import exit
-from sys import executable
+from sys import exit, executable
 from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
@@ -76,6 +75,37 @@ class UploadCommand(Command):
 
         exit()
 
+class BuildCommand(Command):
+    """Support setup.py build."""
+
+    description = 'Build and publish the package.'
+    user_options = []
+
+    @staticmethod
+    def status(s):
+        """Prints things in bold."""
+        print('\033[1m{0}\033[0m'.format(s))
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        try:
+            self.status('Removing previous builds…')
+            rmtree(path.join(here, 'build'))
+            rmtree(path.join(here, 'dist'))
+        except OSError:
+            pass
+
+        self.status('Building Source and Wheel (universal) distribution…')
+        bash('{0} setup.py sdist bdist_wheel --universal'.format(executable))
+
+        exit()
+
+
 setup(
     name=NAME,
     version=about['__version__'],
@@ -86,7 +116,8 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
+    package_dir={'':'src'},
+    packages=find_packages("src", exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
     # entry_points={ # TODO tuning util
     #     'console_scripts': ['mycli=mymodule:cli'],
     # },
@@ -105,5 +136,6 @@ setup(
     # $ setup.py publish support.
     cmdclass={
         'upload': UploadCommand,
+        'dist': BuildCommand,
     },
 )

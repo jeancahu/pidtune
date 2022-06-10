@@ -1,14 +1,16 @@
+from typeguard import typechecked
 from control import tf
 from control.matlab import zpk2tf as zpk, dcgain, bode
 import numpy as np
 
-
+@typechecked
 def cronePadula2 (
-        k: float,       # Gain
-        v: float,      # Fractional order
+        k: float,          # Gain
+        v: float,          # Fractional order
         wl: float = 0.001, # Floor frequency
         wh: float = 1000,  # Ceil frequency
-) -> tf:                   # Output transfer function
+        n : int = 8        # Approximation order (n)
+) -> tuple:                # Output transfer function
     """ CronePadula2 approach a Laplace transform for a fractional order
     differentiator or integrator.
     It returns a list of zeros, poles and a gain for the equivalent
@@ -36,12 +38,6 @@ def cronePadula2 (
     :rtype: tf
     """
 
-    if (type(v) == complex):
-        raise ValueError("Alpha is a complex number")
-
-    # Approximation order (n)
-    n = 8
-
     # Round to the floor value
     f = int(v)
     vf = v - f
@@ -49,8 +45,8 @@ def cronePadula2 (
     z = [] # Zeros
     p = [] # Poles
 
-    alpha = np.power((wh/wl),(vf/n))
-    eta   = np.power((wh/wl),((1-vf)/n))
+    alpha = np.power(wh/wl,vf/n)
+    eta   = np.power(wh/wl,(1-vf)/n)
 
     z.append(wl * np.sqrt(eta))
     p.append(z[0]*alpha)
@@ -77,6 +73,4 @@ def cronePadula2 (
 
     if (v>0):
         return (negz + [0]*f, negp, k)
-
-    else:
-        return (negz, negp + [0]*f, k)
+    return (negz, negp + [0]*f, k)

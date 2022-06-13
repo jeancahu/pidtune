@@ -68,6 +68,10 @@ class FractionalOrderModel(): # TODO herence from generic plant model
                 script = """
                 % Run on execution start
 version_info=ver("MATLAB");
+
+ver("control")
+ver("optim")
+ver("symbolic")
 unix("which python")
 
 try

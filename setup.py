@@ -13,7 +13,7 @@ DESCRIPTION = 'PID tuning server for factorial order models.'
 URL = 'https://github.com/jeancahu/pidtune'
 EMAIL = 'jeancahu@gmail.com'
 AUTHOR = 'Jeancarlo Hidalgo'
-REQUIRES_PYTHON = '>=3.10.0'
+REQUIRES_PYTHON = '>=3.8.0'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -132,7 +132,7 @@ setup(
         # Trove classifiers
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
     ],

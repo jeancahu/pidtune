@@ -8,7 +8,7 @@ from ..utils.cronePadula2 import cronePadula2
 #from oct2py import Oct2py as o2p # ??
 from typeguard import typechecked
 from subprocess import Popen, PIPE, STDOUT
-from os import path, remove, rmdir
+from os import path, remove, rmdir, environ
 import tempfile
 import pandas as pd
 import json
@@ -56,7 +56,9 @@ class FractionalOrderModel(): # TODO herence from generic plant model
                     stdout=PIPE,
                     stdin=PIPE,
                     stderr=PIPE,
-                    start_new_session=True)
+                    start_new_session=True,
+                    env=environ.copy()
+                )
 
                 tmpdir = tempfile.mkdtemp()
                 results_file = path.join(tmpdir, 'results.json')
@@ -66,6 +68,7 @@ class FractionalOrderModel(): # TODO herence from generic plant model
                 script = """
                 % Run on execution start
 version_info=ver("MATLAB");
+unix("which python")
 
 try
   if (version_info.Name=="MATLAB")
@@ -111,10 +114,12 @@ in_v3={};                                % controled variable vector
 
                 ### The two next lines will wait till the program ends. !IMPORTANT
                 lines = [ line.decode() for line in octave_run.stdout.readlines()]
-                lines = [ line.decode() for line in octave_run.stderr.readlines()]
+                lines = lines + [ line.decode() for line in octave_run.stderr.readlines()]
 
-                if octave_run.terminate():
-                    raise Exception("Internal Octave/Matlab execution error")
+                error_code = octave_run.terminate()
+                if error_code:
+                    print("\n".join(lines))
+                    raise Exception("Internal Octave/Matlab execution error: {}".format(error_code))
 
                 results = open(results_file, 'r')
                 results_dict = json.loads("".join(results.readlines()))
@@ -141,8 +146,7 @@ in_v3={};                                % controled variable vector
                 self.IAE = results_dict["L"]
 
             except Exception as e:
-                print(e)
-                raise ValueError("Plant response wrong input vectors, verify your data")
+                raise ValueError("Plant response wrong input vectors, verify your data, {}".format(str(e)))
 
         ## Tune controllers
         self.controllers = self.tune_controllers()

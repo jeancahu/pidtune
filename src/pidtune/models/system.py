@@ -51,13 +51,9 @@ class ClosedLoop ():
         ts = ts[ts > series * self.plant.L] # Drop stationary data
         xs = xs[(len(xs)-len(ts)):]
 
-        print("Series: {}\nlen_xs: {}\nlen_ts: {}\n".format(series, len(xs), len(ts)))
         series_t = np.arange(0, series * self.plant.L, self.plant.L/L_shift_factor, dtype=float)
         series_y = np.full(len(series_t), 0.0, dtype=float)
         y_temp = np.full(len(series_t), 1.0, dtype=float)
-
-
-        print("len_series_t: {}\nlen_y_temp: {}\n".format(series_t.shape, y_temp.shape))
 
         for i in range(series):
             y_temp, l_time, l_x0 = lsim(ctl_tf*pln_tf, y_temp, series_t)
@@ -68,10 +64,4 @@ class ClosedLoop ():
             else:
                 series_y = np.add(series_y, y_temp)
 
-        print("len_series_t: {}\nlen_series_y: {}\n".format(series_t.shape, series_y.shape))
-
-        ## Temporal
-        import csv
-        with open("{}_{}.csv".format(str(self.plant), str(self.controller)), 'w') as f:
-            writer = csv.writer(f)
-            writer.writerows(zip(list(series_t) + list(ts), list(series_y) + list(xs)))
+        return (list(series_t) + list(ts), list(series_y) + list(xs))

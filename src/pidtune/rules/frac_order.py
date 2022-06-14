@@ -533,23 +533,32 @@ def tuning(alpha, T, K, L, Ms, ctype):
     PI/PID Tunning rule for fractional order models
     # TODO: add tuning rule paper reference
 
-    Args:
-    param: in: alpha     Fractional order
-    param: in: T         Time constant
-    param: in: K         Proportional constant
-    param: in: L         Dead time constant
-    param: in: Ms        Maximum sensitivity
-    param: in: ctype     Controler type ['PI','PID']
+    :param alpha:     Fractional order
+    :type alpha: float
 
-    Internal values
-    * tao_o, Fractional normalized dead time
+    :param T:         Time constant
+    :type T: float
+
+    :param K:         Proportional constant
+    :type K: float
+
+    :param L:         Dead time constant
+    :type L: float
+
+    :param Ms:        Maximum sensitivity
+    :type Ms: float
+
+    :param ctype:     Controler type ['PI','PID']
+    :type ctype: strg
+
+    :returns: A controller with the synthonized parameters for the input plant
+    :rtype Controller:
     """
 
     if ctype == 'PID' or ctype == 'PI':
         pass
     else:
         raise ValueError("Unknown controller")
-        return False
 
     try:
         alpha    = float(alpha)
@@ -560,7 +569,6 @@ def tuning(alpha, T, K, L, Ms, ctype):
 
     except Exception:
         raise ValueError("Wrong input value, tuning input error")
-        return False
 
     # Verify alpha is in range
     if ctype == 'PI':
@@ -573,7 +581,6 @@ def tuning(alpha, T, K, L, Ms, ctype):
     else:
         raise ValueError(
             'Fractional order is not in range [', alpha_range[1],', ', alpha_range[0],']')
-        return False
 
     # Calculate fractional normalized dead time
     tao_o = float(L)/(_np.power(T,1/alpha))
@@ -582,7 +589,6 @@ def tuning(alpha, T, K, L, Ms, ctype):
         pass
     else:
         raise ValueError('Fractional normalized dead time is not in range [0.1, 2.0]')
-        return False
 
     if Ms == '2.0':
         if ctype == 'PID':
@@ -596,7 +602,6 @@ def tuning(alpha, T, K, L, Ms, ctype):
             values_dict = PI_Ms_1_4
     else:
         raise ValueError('Maximum sensitivity is not in {1.4, 2.0}')
-        return False
 
     # Calculate results:
     kappa_p = normalized_proportional_const(values_dict, alpha, tao_o)

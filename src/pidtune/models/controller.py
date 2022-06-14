@@ -1,4 +1,5 @@
 from typeguard import typechecked
+from control import tf
 
 class Controller():
     @typechecked
@@ -11,7 +12,13 @@ class Controller():
             n_td: float,
             kp: float,
             ti: float,
-            td: float
+            td: float,
+
+            ## PID ODoF by default
+            action: float = 1,
+            filter_constant: float = 0.1,
+            beta: float = 1, # TODO
+            gamma: float = 0, # TODO
     ):
         self.ctype = ctype
         self.Ms = Ms
@@ -22,10 +29,17 @@ class Controller():
         self.ti = ti
         self.td = td
 
+        self.action = action
+        self.filter_constant = filter_constant
+
         # raise Exception("Wrong value") #TODO
         # raise ValueError("Wrong value") #TODO
 
     # Print json format __str__ etc
+
+    def tf(self):
+        s = tf('s')
+        return self.action * self.kp*( 1 + (1/(self.ti*s)) + ((self.td*s)/(1+self.filter_constant*self.td*s)))
 
     def toDict(self):
         return {

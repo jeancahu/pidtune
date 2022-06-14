@@ -14,7 +14,7 @@ from pidtune.models import system
 
 
 e_plant = plant.FractionalOrderModel(
-    alpha=1.1,
+    alpha=1.6,
     time_constant=1.1,
     proportional_constant=1.0,
     dead_time_constant=1.1
@@ -27,7 +27,7 @@ e_plant.tf()
 
 controllers = e_plant.tune_controllers()
 sys_list = [
-    system.CloseLoop(
+    system.ClosedLoop(
         controller = controller,
         plant = e_plant)
     for controller in controllers ]

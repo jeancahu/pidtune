@@ -1,11 +1,6 @@
 from ..rules import frac_order as _frac_order # Only rule it has by now
 from ..utils.cronePadula2 import cronePadula2
 
-#import numpy as np
-#import matplotlib
-#from scipy import signal
-#import control
-#from oct2py import Oct2py as o2p # ??
 from typeguard import typechecked
 from subprocess import Popen, PIPE, STDOUT
 from os import path, remove, rmdir, environ
@@ -147,7 +142,7 @@ in_v3={};                                % controled variable vector
                 self.T = results_dict["T"]
                 self.K = results_dict["K"]
                 self.L = results_dict["L"]
-                self.IAE = results_dict["L"]
+                self.IAE = results_dict["IAE"]
 
             except Exception as e:
                 raise ValueError("Plant response wrong input vectors, verify your data, {}".format(str(e)))
@@ -156,7 +151,7 @@ in_v3={};                                % controled variable vector
         self.controllers = self.tune_controllers()
 
     def tf (self):
-        """ Returns a tuple (transfer function, plant delay)
+        """ Returns a control.tf transfer function (without dead time)
         """
 
         # Using CRONE Oustaloup to define Pm
@@ -177,21 +172,18 @@ in_v3={};                                % controled variable vector
         ## Convert mod into tf
         mod = tf(mod[0], mod[1])
 
-        # self.tf = K*exp(-L*s)/(T*mod+1);
-        self.tf = self.K/(self.T*mod+1)
-
-
-        #### TODO
-        # ts, xs = step_response( self.tf )
-        # import csv
-        # with open('some.csv', 'w') as f:
-        #     writer = csv.writer(f)
-        #     writer.writerows(zip(ts, xs))
-
+        # l_tf = K*exp(-L*s)/(T*mod+1);
+        return self.K/(self.T*mod+1) # No deadtime
 
     def tune_controllers(self):
         controllers = []
-        for ctype in _frac_order.valid_controllers:
+
+        if self.alpha > 1.6:
+            valid_ctls = ('PID',)
+        else:
+            valid_ctls = _frac_order.valid_controllers
+
+        for ctype in valid_ctls:
             for Ms in _frac_order.valid_Ms:
                 temp = _frac_order.tuning(self.alpha, self.T, self.K, self.L, Ms, ctype)
                 if temp:
@@ -201,9 +193,10 @@ in_v3={};                                % controled variable vector
     def toDict(self):
         return {
             'alpha' : self.alpha,
-            'T'     :     self.T,
-            'K'     :     self.K,
-            'L'     :     self.L
+            'T'     : self.T,
+            'K'     : self.K,
+            'L'     : self.L,
+            'IAE'   : self.IAE
         }
 
     def toResponse(self):

@@ -24,8 +24,6 @@ class ClosedLoop ():
     ):
         ctl_tf = self.controller.tf()
         pln_tf = self.plant.tf()
-
-
         pade_delay_cf = pade(
             self.plant.toDict()['L'],
             4 # Order
@@ -36,6 +34,20 @@ class ClosedLoop ():
 
         ts, xs = step(My_r)
 
+        ## If the simulation time is less than L, simulate again for a longer period
+        if (np.max(ts) < self.plant.L):
+            ts, xs = step(My_r, np.arange(0, 30 * self.plant.L, self.plant.L/10))
+
+        stationary = len(
+            xs[ abs(xs - 1) < 0.001 ]
+        )
+
+        ## If there are not stationary points in the vector, let's simulate for the doble of time
+        if stationary < (0.05)*len(ts):
+            ts, xs = step(My_r, np.arange(0, 2*ts[-1], self.plant.L/10))
+
+
+        t_pade_vect, y_pade_vect = ts, xs
         stationary = len(
             xs[ abs(xs - 1) < 0.001 ]
         )
@@ -45,8 +57,8 @@ class ClosedLoop ():
 
         series = int(ts[-1]/self.plant.L)
         L_shift_factor = 50
-        if series > 15:
-            series = 15
+        if series > 30:
+            series = 30
 
         ts = ts[ts > series * self.plant.L] # Drop stationary data
         xs = xs[(len(xs)-len(ts)):]
@@ -64,4 +76,10 @@ class ClosedLoop ():
             else:
                 series_y = np.add(series_y, y_temp)
 
-        return (list(series_t) + list(ts), list(series_y) + list(xs))
+        ## Return full time vector, full yout vector
+        return (
+            list(series_t) + list(ts), # time vector
+            list(series_y) + list(xs), # Y vector
+            list(t_pade_vect),
+            list(y_pade_vect),
+        )

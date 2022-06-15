@@ -185,7 +185,14 @@ in_v3={};                                % controled variable vector
 
         for ctype in valid_ctls:
             for Ms in _frac_order.valid_Ms:
-                temp = _frac_order.tuning(self.alpha, self.T, self.K, self.L, Ms, ctype)
+                temp = _frac_order.tuning(
+                    self.alpha,
+                    self.T,
+                    self.K,
+                    self.L,
+                    Ms,
+                    ctype
+                )
                 if temp:
                     controllers.append(temp)
         return controllers

@@ -563,6 +563,7 @@ def tuning(alpha, T, K, L, Ms, ctype):
     try:
         alpha    = float(alpha)
         # T        = T
+        action   = _np.sign(K)
         K        = abs(K)
         # L        = L
         # Ms       = Ms
@@ -618,12 +619,13 @@ def tuning(alpha, T, K, L, Ms, ctype):
         T_d = 0
 
     return Controller(
-        ctype,   # Controller type
-        Ms,      # Controller-plant sensivity
-        kappa_p, # Normalized proportional constant
-        tao_i,   # Normalized integral constant
-        tao_d,   # Normalized differential constant
-        K_p,     # Proportional constant
-        T_i,     # Integral constant
-        T_d,     # Differential constant
+        ctype = ctype,   # Controller type
+        Ms = Ms,      # Controller-plant sensivity
+        n_kp = kappa_p, # Normalized proportional constant
+        n_ti = tao_i,   # Normalized integral constant
+        n_td = tao_d,   # Normalized differential constant
+        kp = K_p,     # Proportional constant
+        ti = T_i,     # Integral constant
+        td = T_d,     # Differential constant
+        action = action,
     )

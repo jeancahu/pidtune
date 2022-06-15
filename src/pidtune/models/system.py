@@ -80,6 +80,4 @@ class ClosedLoop ():
         return (
             list(series_t) + list(ts), # time vector
             list(series_y) + list(xs), # Y vector
-            list(t_pade_vect),
-            list(y_pade_vect),
         )

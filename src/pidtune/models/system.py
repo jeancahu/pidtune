@@ -43,20 +43,16 @@ class ClosedLoop ():
         if (np.max(ts) < self.plant.L):
             ts, xs = step(My_r, np.arange(0, 30 * self.plant.L, self.plant.L/10))
 
-        stationary = len(
-            xs[ abs(xs - 1) < 0.001 ]
-        )
+        # ## If there are not stationary points in the vector, let's simulate for two times the previuos time
+        for j in range(4):
+            i = np.abs(np.subtract(xs, 1))
+            temporary = np.sum(np.array(i > 0.00005, dtype=int))
+            if (temporary < 0.9*len(i)):
+                break
+            ts, xs = step(My_r, np.arange(0, 2*ts[-1], self.plant.L/10)) # FIXME
 
-        ## If there are not stationary points in the vector, let's simulate for 20 times the previuos time
-        if stationary < (0.05)*len(ts):
-            ts, xs = step(My_r, np.arange(0, 20*ts[-1], self.plant.L/10))
-
-
-        stationary = len(
-            xs[ abs(xs - 1) < 0.001 ]
-        )
-        ts = ts[:(len(xs) - stationary)] # Drop stationary data
-        xs = xs[:(len(xs) - stationary)]
+        ts = ts[:temporary] # Drop stationary data
+        xs = xs[:temporary]
 
         ## Regulatory response
         ts_reg, xs_reg = step(My_d, ts)

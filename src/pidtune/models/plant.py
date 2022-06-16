@@ -8,8 +8,9 @@ import tempfile
 import pandas as pd
 import json
 
-from control import tf, step_response # Transfer function
+from control import tf, step_response # Transfer function, step response
 from control.matlab import zpk2tf as zpk
+import numpy as np
 
 class FractionalOrderModel(): # TODO herence from generic plant model
     @typechecked
@@ -207,13 +208,25 @@ in_v3={};                                % controled variable vector
         }
 
     def toResponse(self):
-        # TODO: if response is not defined it needs be calculated
-        return {
-            'time'    :   self.time_vector,       # Time vector
-            'step'    :   self.step_vector,       # Step vector
-            'respo'   :   self.resp_vector,       # Open-loop system response
-            'm_respo' :   self.model_resp_vector  # Open-loop model-system response
+        try:
+            result = {
+                'time'    :   self.time_vector,       # Time vector
+                'step'    :   self.step_vector,       # Step vector
+                'respo'   :   self.resp_vector,       # Open-loop system response
+                'm_respo' :   self.model_resp_vector  # Open-loop model-system response
+            }
+        except Exception as e:
+
+            t, y = step_response(self.tf())
+
+            result = {
+                'time'    :   list(np.add(self.L, t)),       # Time vector
+                'step'    :   [],                     # Step vector
+                'respo'   :   [],                     # Open-loop system response
+                'm_respo' :   list(y)  # Open-loop model-system response
         }
+
+        return result
 
     def __str__(self):
         return str(self.toDict())

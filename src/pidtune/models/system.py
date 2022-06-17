@@ -106,13 +106,11 @@ class ClosedLoop ():
 
         ## Calculate IAE:
         y_error =  np.abs(np.subtract(1, series_y))
-        delta_t = np.diff(series_t, prepend=0)
-        IAE= np.sum(np.multiply(delta_t, y_error))
+        IAE = np.trapz(y_error, series_t)
 
         ## Calculate IAE_reg:
         y_error =  np.abs(series_y_reg)
-        delta_t = np.diff(series_t, prepend=0)
-        IAE_reg = np.sum(np.multiply(delta_t, y_error))
+        IAE_reg = np.trapz(y_error, series_t)
 
         ## Return full time vector, full yout vector
         return (

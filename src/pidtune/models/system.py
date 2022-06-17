@@ -20,7 +20,8 @@ class ClosedLoop ():
 
     def step_response(
             self,
-            magnitude: float = 1.0
+            servo_magnitude: float = 1.0,
+            disturbance_magnitude: float = 0.1
     ):
         ctl_tf = self.controller.tf()
         pln_tf = self.plant.tf()
@@ -96,10 +97,11 @@ class ClosedLoop ():
 
         ## Concatenate servo
         series_y = list(series_y) + list(xs)
+        series_y = np.multiply(servo_magnitude, series_y)
 
-        ## Reduce disturbance to 10%
+        ## Concatenate disturbance
         series_y_reg = list(series_y_reg) + list(xs_reg)
-        series_y_reg = np.multiply(0.1, series_y_reg)
+        series_y_reg = np.multiply(disturbance_magnitude, series_y_reg)
 
         ## concatenate time
         series_t = list(series_t) + list(ts)

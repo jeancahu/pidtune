@@ -110,7 +110,7 @@ class ClosedLoop ():
         IAE= np.sum(np.multiply(delta_t, y_error))
 
         ## Calculate IAE_reg:
-        y_error =  np.abs(np.subtract(1, series_y_reg))
+        y_error =  np.abs(series_y_reg)
         delta_t = np.diff(series_t, prepend=0)
         IAE_reg = np.sum(np.multiply(delta_t, y_error))
 

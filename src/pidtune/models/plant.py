@@ -106,11 +106,10 @@ in_v3={};                                % controled variable vector
 
                 results_list =[ json.loads(i) for i in lines_std[-3:] if "fractional_model" in i]
                 if not len(results_list):
+                    print("\n".join(lines))
                     raise ValueError("Bad result for IDFOM excecution, verify your data.")
 
                 results_dict = results_list[0]
-
-
 
                 signals_matrix = [ i.replace("\n", "").replace("result_signals\t", '').split('\t') for i in lines if "result_signals" in i ]
                 self.time_vector =       [ i[0] for i in signals_matrix ]  # Time vector

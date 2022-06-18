@@ -370,6 +370,7 @@ end
 ym=step(Gmo,tnorm);
 
 % send signals to stdout
+out = [tnorm unorm ynorm ym/Ko];
 for i = 1:length(out)
   fprintf('result_signals\t%d\t%d\t%d\t%d\n',out(i,1),out(i,2),out(i,3),out(i,4));
 end

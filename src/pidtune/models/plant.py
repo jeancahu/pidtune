@@ -4,8 +4,6 @@ from ..utils.cronePadula2 import cronePadula2
 from typeguard import typechecked
 from subprocess import Popen, PIPE, STDOUT
 from os import path, remove, rmdir, environ
-import tempfile
-import pandas as pd
 import json
 
 from control import tf, step_response # Transfer function, step response
@@ -37,6 +35,7 @@ class FractionalOrderModel(): # TODO herence from generic plant model
                 self.K     = proportional_constant
                 self.L     = dead_time_constant
                 self.IAE   = 0.0
+                self.controllers = self.tune_controllers()
             except Exception:
                 raise ValueError("Plant model wrong input values")
 
@@ -56,42 +55,29 @@ class FractionalOrderModel(): # TODO herence from generic plant model
                     env=environ.copy()
                 )
 
-                tmpdir = tempfile.mkdtemp()
-                results_file = path.join(tmpdir, 'results.json')
-                step_response_file = path.join(tmpdir, 'model_vs_initial_step_response.csv')
 
                 script = open(path.join(octalib_path, 'IDFOM.m'), 'r').readlines()
                 script = """
-                % Run on execution start
+% Run on execution start
 version_info=ver("MATLAB");
-
-ver("control")
-ver("optim")
-ver("symbolic")
-unix("which python")
-
 try
   if (version_info.Name=="MATLAB")
-    fprintf("Running on Matlab\\n")
+    % Running on Matlab
   end
 catch ME
-  fprintf("Running on Octave\\n")
+  %% Running on Octave
   %% Octave load packages
   pkg load control
   pkg load symbolic
   pkg load optim
 end
 
-fprintf("Running initial module\\n")
+% Running initial module
 
-%clc;
 clear;
 
 %% Define
 s=tf('s');
-
-file_json_id = fopen("{}", "wt");
-fid=fopen("{}",'wt');
 
 %% Global variables definition
 global To vo Lo Ko ynorm unorm tnorm long tin tmax tu
@@ -100,10 +86,7 @@ global To vo Lo Ko ynorm unorm tnorm long tin tmax tu
 in_v1={};                                % time vector
 in_v2={};                                % control signal vector
 in_v3={};                                % controled variable vector
-
                 """.format(
-                    results_file,
-                    step_response_file,
                     str(time_vector).replace(',',';'),
                     str(step_vector).replace(',',';'),
                     str(resp_vector).replace(',',';'),
@@ -113,30 +96,27 @@ in_v3={};                                % controled variable vector
                 octave_run.stdin.close()
 
                 ### The two next lines will wait till the program ends. !IMPORTANT
-                lines = [ line.decode() for line in octave_run.stdout.readlines()]
-                lines = lines + [ line.decode() for line in octave_run.stderr.readlines()]
+                lines_std = [ line.decode() for line in octave_run.stdout.readlines()]
+                lines = lines_std + [ line.decode() for line in octave_run.stderr.readlines()]
 
                 error_code = octave_run.terminate()
                 if error_code:
                     print("\n".join(lines))
                     raise Exception("Internal Octave/Matlab execution error: {}".format(error_code))
 
-                results = open(results_file, 'r')
-                results_dict = json.loads("".join(results.readlines()))
-                results.close()
+                results_list =[ json.loads(i) for i in lines_std[-3:] if "fractional_model" in i]
+                if not len(results_list):
+                    raise ValueError("Bad result for IDFOM excecution, verify your data.")
+
+                results_dict = results_list[0]
 
 
-                colums = ["time", "step", "initial", "model"]
-                df = pd.read_csv(step_response_file, sep='\t', header=None, names=colums)
 
-                self.time_vector=df.time.tolist()        # Time vector
-                self.step_vector=df.step.tolist()        # Step vector
-                self.resp_vector=df.initial.tolist()      # Open-loop system response
-                self.model_resp_vector=df.model.tolist()  # Open-loop model-system response
-
-                remove(step_response_file)
-                remove(results_file)
-                rmdir(tmpdir)
+                signals_matrix = [ i.replace("\n", "").replace("result_signals\t", '').split('\t') for i in lines if "result_signals" in i ]
+                self.time_vector =       [ i[0] for i in signals_matrix ]  # Time vector
+                self.step_vector =       [ i[1] for i in signals_matrix ]  # Step vector
+                self.resp_vector =       [ i[2] for i in signals_matrix ]  # Open-loop system response
+                self.model_resp_vector = [ i[3] for i in signals_matrix ]  # Open-loop model-system response
 
                 ## Computed params
                 self.alpha = results_dict["v"]

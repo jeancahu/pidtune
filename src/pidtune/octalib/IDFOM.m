@@ -20,15 +20,15 @@ u_v2=false;
 u_v3=false;
 
 if max(diff_v1) < mean_v2 && max(diff_v1) < mean_v3
-    fprintf('\tu(s) is vector 1\n');
+    %% u(s) is vector 1
     u_v1=true;
     u = in_v1;
 elseif max(diff_v2) < mean_v1 && max(diff_v2) < mean_v3
-    fprintf('\tu(s) is vector 2\n');
+    %% u(s) is vector 2
     u_v2=true;
     u = in_v2;
 else
-    fprintf('\tu(s) is vector 3\n');
+    %% u(s) is vector 3
     u_v3=true;
     u = in_v3;
 end
@@ -39,15 +39,15 @@ t_v2=false;
 t_v3=false;
 
 if ~u_v1 && min(diff_v1) > min(diff_v2) && min(diff_v1) > min(diff_v3)
-    fprintf('\tt(s) is vector 1\n');
+    %% t(s) is vector 1
     t_v1=true;
     t = in_v1;
 elseif ~u_v2 && min(diff_v2) > min(diff_v1) && min(diff_v2) > min(diff_v3)
-    fprintf('\tt(s) is vector 2\n');
+    %% t(s) is vector 2
     t_v2=true;
     t = in_v2;
 else
-    fprintf('\tt(s) is vector 3\n');
+    %% t(s) is vector 3
     t_v3=true;
     t = in_v3;
 end
@@ -55,13 +55,13 @@ end
 %% Find y(s) in signals columns
 
 if ~u_v1 && ~t_v1
-    fprintf('\ty(s) is vector 1\n');
+    %% y(s) is vector 1
     y = in_v1;
 elseif ~u_v2 && ~t_v2
-    fprintf('\ty(s) is vector 2\n');
+    %% y(s) is vector 2
     y = in_v2;
 else
-    fprintf('\ty(s) is vector 3\n');
+    %% ty(s) is vector 3
     y = in_v3;
 end
 
@@ -72,7 +72,7 @@ y = in_v3;%% Main execution
 % The next program is able to generate the fractional model parameters
 % compute previous variables and then get the final constants
 
-fprintf('Optimal model is in process...\n')
+%% Optimal model is in process...
 
 %% Static gain processing
 % Vectors in file need to keep same lenght
@@ -285,7 +285,7 @@ else
 end
 
 %% Get initial model form
-fprintf("Computing initial model\n")
+%% Computing initial model
 
     % Model to use
     if v0<1
@@ -369,50 +369,15 @@ end
 
 ym=step(Gmo,tnorm);
 
-%% Print parameters
-fprintf('Initial model paramenters:\n')
-if (Ko/floor(Ko))~=1
-    fprintf('  K\t= %4.2d\n',Ko)
-else
-    fprintf('  K\t= %4.1d\n',Ko)
-end
-if (Lo/floor(Lo))~=1
-    fprintf('  L\t= %1.2d\n',Lo)
-else
-    fprintf('  L\t= %1.1d\n',Lo)
-end
-if vo==1
-    fprintf('  v\t= %1.1d\n',vo)
-else
-    fprintf('  v\t= %1.2d\n',vo)
-end
-if (To/floor(To))~=1
-    fprintf('  T\t= %1.2d\n',To)
-else
-    fprintf('  T\t= %1.1d\n',To)
-end
-fprintf('  IAE\t= %1.2d\n',IAEns)
-
-fprintf('Fractional order model:\n')
-fprintf('\t\t %1.2E*exp(-%1.2Es)\n',Ko,Lo)
-fprintf('Gm(s)=\t----------------------------\n')
-fprintf('\t\t\t%1.2Es^%1.2E+1 \n',To,vo)
-
-%% Write optimal model in results cache file:
-fprintf(file_json_id, '{\n');
-fprintf(file_json_id, '\t"type": "fractional_model",\n');
-fprintf(file_json_id, '\t"v": %.20f,\n', vo);
-fprintf(file_json_id, '\t"T": %.20f,\n', To);
-fprintf(file_json_id, '\t"K": %.20f,\n', Ko);
-fprintf(file_json_id, '\t"L": %.20f,\n', Lo);
-fprintf(file_json_id, '\t"IAE": %.20f\n', IAEns);
-fprintf(file_json_id, '}\n');
-
-% Save signals to file
-out = [tnorm unorm ynorm ym/Ko];
-% fprintf(fid,'time\tstep\tinitial\tmodel\n');
+% send signals to stdout
 for i = 1:length(out)
-    fprintf(fid,'%d\t%d\t%d\t%d\n',out(i,1),out(i,2),out(i,3),out(i,4));
+  fprintf('result_signals\t%d\t%d\t%d\t%d\n',out(i,1),out(i,2),out(i,3),out(i,4));
 end
-fclose(fid);
-fclose(file_json_id);
+
+%% Print optimal model JSON through STDOUT:
+fprintf('\n{"type": "fractional_model", "v": %.20f, "T": %.20f, "K": %.20f, "L": %.20f, "IAE": %.20f}', ...
+        vo, ...
+        To, ...
+        Ko, ...
+        Lo, ...
+        IAEns);

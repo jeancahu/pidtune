@@ -20,7 +20,6 @@ REQUIRED = [
     'typeguard',
     'numpy',
     'sympy==1.5.1', # Octave dep
-    'pandas',       # To read Octave output
     'pillow',
     'control'
 ]

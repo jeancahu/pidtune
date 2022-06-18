@@ -1,5 +1,6 @@
 from ..rules import frac_order as _frac_order # Only rule it has by now
 from ..utils.cronePadula2 import cronePadula2
+from ..utils.vectUtils import normalizeVect, identify
 
 from typeguard import typechecked
 from subprocess import Popen, PIPE, STDOUT
@@ -55,6 +56,8 @@ class FractionalOrderModel(): # TODO herence from generic plant model
                     env=environ.copy()
                 )
 
+                # time_vector, step_vector, resp_vector = identify( # FIXME TODO
+                #     time_vector, step_vector, resp_vector)
 
                 script = open(path.join(octalib_path, 'IDFOM.m'), 'r').readlines()
                 script = """
@@ -83,13 +86,15 @@ s=tf('s');
 global To vo Lo Ko ynorm unorm tnorm long tin tmax tu
 
 %% Load data from thread cache
-in_v1={};                                % time vector
-in_v2={};                                % control signal vector
-in_v3={};                                % controled variable vector
+t={};                                % time vector
+u={};                                % control signal vector
+y={};                                % controled variable vector
+long = {}; % define the default length
                 """.format(
                     str(time_vector).replace(',',';'),
                     str(step_vector).replace(',',';'),
                     str(resp_vector).replace(',',';'),
+                    len(time_vector)
                 ) + "".join(script)
 
                 octave_run.stdin.write(script.encode())

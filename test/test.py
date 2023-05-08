@@ -15,6 +15,15 @@ from pidtune.models import system
 import unittest
 from plant_alfaro123c import Alfaro123c
 
+PLANT_MEMBERS = [
+    '__init__',
+    'tf',
+    'tune_controllers',
+    'toDict',
+    'toResponse',
+    '__str__',
+]
+
 
 e_plant = plant.FractionalOrderModel(
     alpha=1.6,
@@ -118,6 +127,30 @@ class Test_response(unittest.TestCase):
 class Test_transfer(unittest.TestCase):
     def test_response_correct(self):
         self.assertMultiLineEqual(tf_hashed, tf_reference, msg=None)
+
+
+## Alfaro123c Testing
+class Test_Alfaro123c(unittest.TestCase):
+    """
+    Alfaro123c plant model test class
+    """
+
+    def test_create_instance(self):
+        """
+        Alfaro123c instance does not raise exceptions
+        """
+        obj = Alfaro123c()
+
+    def test_object_members(self):
+        """
+        Plant model has at least the base members required
+        """
+        obj = Alfaro123c()
+        for member in PLANT_MEMBERS:
+            self.assertTrue(
+                hasattr(obj, member),
+                "obj Alfaro123c has no \"{}\" required member".format(member))
+
 
 if __name__ == '__main__':
     unittest.main()

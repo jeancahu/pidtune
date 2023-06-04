@@ -34,10 +34,10 @@ e_plant = plant.FractionalOrderModel(
 
 
 tf=e_plant.tf()
-tf_hashed = hashlib.sha256(b"tf").hexdigest()
+tf_hashed = hashlib.sha256(str(tf).encode('ascii')).hexdigest()
 
 controllers = e_plant.tune_controllers()
-_controllers = [c.toDict() for c in controllers ]
+controllers = [c.toDict() for c in controllers ]
 
 sys_list = [
     system.ClosedLoop(
@@ -45,14 +45,16 @@ sys_list = [
         plant = e_plant)
     for controller in controllers ]
 
+
+hashed_sys_response_list = list()
 for system in sys_list:
     response=system.step_response()
+    hashed_sys_response_list.append(
+        hashlib.sha256(str(response).encode('ascii')).hexdigest()
+    )
 
-response_output = hashlib.sha256(b"response").hexdigest()
-
-#print(response_output)
 #List of controllers reference to verify the outputs
-controllers_list = [
+controllers_reference = [
     {'ctype': 'PID',
      'Ms': '1.4',
      'n_kp': 0.19147715177000726,
@@ -95,38 +97,49 @@ L = 1.1
 IAE = 0.0
 reference_values = [alph, T, K, L, IAE]
 
-#Encrypted word reference to verify the system response output
-#Hardcoded from the verified results
-reponse_hash="a9f4b3d22a523fdada41c85c175425bcd15b32b4cd0f54d9433accd52d7195a1"
-
-#Encrypted word reference to verify the transfer function
-#Hardcoded from the verified results
-tf_reference="8541c2d149faea7b7e534fcd56f5d352c7ed5a620d81394c002a17f07e18a567"
-
+# Resulting hashed close-loop system response list
+hashed_sys_response_list_reference = \
+    ['062e7e4b3a43dcf088b55d74da354073a6f043179337e4e48f6d0fcb523b298f',
+     'e6db3f0489f1b8d3e7047a4029da2cb75cb734bf25cf2ec43439cb2f61f8f2b1',
+     '857462f0c65da6b3006a762e710c30f2d75dd36da2cc97d8635f30e7ddcd58c9',
+     '0ac6851e54f9142093b729b733d7072b04beac2e3111433f2b2ab2671250856c0']
 
 
-#Module to test if the plant parameters are retrieved correctly
-class Test_plant(unittest.TestCase):
-    def test_is_correct(self):
+# Resulting transfer function hash
+tf_reference="49a165661c6446112b82fc0fb18a91f5a68f399ef0bb64f1a7ccf2e78e567bcc0"
+
+
+class Test_fractional_model(unittest.TestCase):
+    """
+    Test class for fractional model
+    """
+    def test_parameters(self):
         self.assertEqual(e_plant.alpha, reference_values[0])
         self.assertEqual(e_plant.T, reference_values[1])
         self.assertEqual(e_plant.K, reference_values[2])
         self.assertEqual(e_plant.L, reference_values[3])
         self.assertEqual(e_plant.IAE, reference_values[4])
 
-#Module to test if the list of controllers is retrieved correctly
-class Test_controllers(unittest.TestCase):
-    def test_controllers_are_correct(self):
-        self.assertListEqual(_controllers, controllers_list)
+    def test_controllers(self):
+        self.assertListEqual(
+            controllers_reference,
+            controllers,
+            msg="Reference controllers and computed differ"
+        )
 
-#Module to test the step response of the system
-class Test_response(unittest.TestCase):
-    def test_response_correct(self):
-        self.assertMultiLineEqual(response_output, reponse_hash, msg=None)
+    def test_tf(self):
+        self.assertEqual(
+            tf_reference,
+            tf_hashed,
+            msg="Reference Transfer Function and computed one do not match"
+        )
 
-class Test_transfer(unittest.TestCase):
-    def test_response_correct(self):
-        self.assertMultiLineEqual(tf_hashed, tf_reference, msg=None)
+    def test_closeloop_system_response(self):
+        self.assertListEqual(
+            hashed_sys_response_list_reference,
+            hashed_sys_response_list,
+            msg="Reference hashed list and computed one do not match"
+        )
 
 
 ## Alfaro123c Testing

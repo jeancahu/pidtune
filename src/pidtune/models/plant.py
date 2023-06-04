@@ -28,7 +28,7 @@ class FractionalOrderModel(): # TODO herence from generic plant model
                  dead_time_constant: float = 0,    # Dead time          (L)
                  ):
 
-        ## Identify the plant model
+        ## Identify the input plant
         if (alpha or time_constant or proportional_constant or dead_time_constant):
             try:
                 self.alpha = alpha
@@ -39,30 +39,33 @@ class FractionalOrderModel(): # TODO herence from generic plant model
                 self.controllers = self.tune_controllers()
             except Exception:
                 raise ValueError("Plant model wrong input values")
+            return # End init process
+
+        elif (len(time_vector) and len(step_vector) and len(resp_vector)):
+            pass # Continue init process by plant model identification
 
         else:
-            if not (len(time_vector) and len(step_vector) and len(resp_vector)):
-                raise ValueError("Plant model wrong input values, no vectors or constants")
+            raise ValueError("Plant model wrong input values, no vectors or constants")
 
-            try:
-                octalib_path = path.join(path.dirname(__file__), '../octalib/')
-                octave_run = Popen(
-                    ['octave-cli'],
-                    cwd=octalib_path,
-                    stdout=PIPE,
-                    stdin=PIPE,
-                    stderr=PIPE,
-                    start_new_session=True,
-                    env=environ.copy()
-                )
+        try: ## Plant model identification process
+            octalib_path = path.join(path.dirname(__file__), '../octalib/')
+            octave_run = Popen(
+                ['octave-cli'],
+                cwd=octalib_path,
+                stdout=PIPE,
+                stdin=PIPE,
+                stderr=PIPE,
+                start_new_session=True,
+                env=environ.copy()
+            )
 
-                # time_vector, step_vector, resp_vector = identify( # FIXME TODO
-                #     time_vector, step_vector, resp_vector)
+            # time_vector, step_vector, resp_vector = identify( # FIXME TODO
+            #     time_vector, step_vector, resp_vector)
 
-                IDFOM = str()
-                with open(path.join(octalib_path, 'IDFOM.m'), 'r') as IDFOM_file:
-                    IDFOM = IDFOM_file.readlines()
-                script = """
+            IDFOM = str()
+            with open(path.join(octalib_path, 'IDFOM.m'), 'r') as IDFOM_file:
+                IDFOM = IDFOM_file.readlines()
+            script = """
 % Run on execution start
 version_info=ver("MATLAB");
 try
@@ -92,47 +95,47 @@ t={};                                % time vector
 u={};                                % control signal vector
 y={};                                % controled variable vector
 long = {}; % define the default length
-                """.format(
-                    str(time_vector).replace(',',';'),
-                    str(step_vector).replace(',',';'),
-                    str(resp_vector).replace(',',';'),
-                    len(time_vector)
-                ) + "".join(IDFOM)
+            """.format(
+                str(time_vector).replace(',',';'),
+                str(step_vector).replace(',',';'),
+                str(resp_vector).replace(',',';'),
+                len(time_vector)
+            ) + "".join(IDFOM)
 
-                octave_run.stdin.write(script.encode('ascii'))
-                octave_run.stdin.close()
+            octave_run.stdin.write(script.encode('ascii'))
+            octave_run.stdin.close()
 
-                ### The two next lines will wait till the program ends. !IMPORTANT
-                lines_std = [ line.decode() for line in octave_run.stdout.readlines()]
-                lines = lines_std + [ line.decode() for line in octave_run.stderr.readlines()]
+            ### The two next lines will wait till the program ends. !IMPORTANT
+            lines_std = [ line.decode() for line in octave_run.stdout.readlines()]
+            lines = lines_std + [ line.decode() for line in octave_run.stderr.readlines()]
 
-                error_code = octave_run.terminate()
-                if error_code:
-                    print("\n".join(lines))
-                    raise Exception("Internal Octave/Matlab execution error: {}".format(error_code))
+            error_code = octave_run.terminate()
+            if error_code:
+                print("\n".join(lines))
+                raise Exception("Internal Octave/Matlab execution error: {}".format(error_code))
 
-                results_list =[ json.loads(i) for i in lines_std[-3:] if "fractional_model" in i]
-                if not len(results_list):
-                    print("\n".join(lines))
-                    raise ValueError("Bad result for IDFOM excecution, verify your data.")
+            results_list =[ json.loads(i) for i in lines_std[-3:] if "fractional_model" in i]
+            if not len(results_list):
+                print("\n".join(lines))
+                raise ValueError("Bad result for IDFOM excecution, verify your data.")
 
-                results_dict = results_list[0]
+            results_dict = results_list[0]
 
-                signals_matrix = [ i.replace("\n", "").replace("result_signals\t", '').split('\t') for i in lines if "result_signals" in i ]
-                self.time_vector =       [ i[0] for i in signals_matrix ]  # Time vector
-                self.step_vector =       [ i[1] for i in signals_matrix ]  # Step vector
-                self.resp_vector =       [ i[2] for i in signals_matrix ]  # Open-loop system response
-                self.model_resp_vector = [ i[3] for i in signals_matrix ]  # Open-loop model-system response
+            signals_matrix = [ i.replace("\n", "").replace("result_signals\t", '').split('\t') for i in lines if "result_signals" in i ]
+            self.time_vector =       [ i[0] for i in signals_matrix ]  # Time vector
+            self.step_vector =       [ i[1] for i in signals_matrix ]  # Step vector
+            self.resp_vector =       [ i[2] for i in signals_matrix ]  # Open-loop system response
+            self.model_resp_vector = [ i[3] for i in signals_matrix ]  # Open-loop model-system response
 
-                ## Computed params
-                self.alpha = results_dict["v"]
-                self.T = results_dict["T"]
-                self.K = results_dict["K"]
-                self.L = results_dict["L"]
-                self.IAE = results_dict["IAE"]
+            ## Computed params
+            self.alpha = results_dict["v"]
+            self.T = results_dict["T"]
+            self.K = results_dict["K"]
+            self.L = results_dict["L"]
+            self.IAE = results_dict["IAE"]
 
-            except Exception as e:
-                raise ValueError("Plant response wrong input vectors, verify your data, {}".format(str(e)))
+        except Exception as e:
+            raise ValueError("Plant response wrong input vectors, verify your data, {}".format(str(e)))
 
         ## Tune controllers
         self.controllers = self.tune_controllers()

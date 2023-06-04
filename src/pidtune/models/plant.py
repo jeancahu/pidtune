@@ -59,7 +59,9 @@ class FractionalOrderModel(): # TODO herence from generic plant model
                 # time_vector, step_vector, resp_vector = identify( # FIXME TODO
                 #     time_vector, step_vector, resp_vector)
 
-                script = open(path.join(octalib_path, 'IDFOM.m'), 'r').readlines()
+                IDFOM = str()
+                with open(path.join(octalib_path, 'IDFOM.m'), 'r') as IDFOM_file:
+                    IDFOM = IDFOM_file.readlines()
                 script = """
 % Run on execution start
 version_info=ver("MATLAB");
@@ -95,9 +97,9 @@ long = {}; % define the default length
                     str(step_vector).replace(',',';'),
                     str(resp_vector).replace(',',';'),
                     len(time_vector)
-                ) + "".join(script)
+                ) + "".join(IDFOM)
 
-                octave_run.stdin.write(script.encode())
+                octave_run.stdin.write(script.encode('ascii'))
                 octave_run.stdin.close()
 
                 ### The two next lines will wait till the program ends. !IMPORTANT

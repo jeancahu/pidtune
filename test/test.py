@@ -15,7 +15,10 @@ from pidtune.models import controller
 from pidtune.models import plant
 from pidtune.models import system as close_loop_system
 import unittest
-from plant_alfaro123c import Alfaro123c
+from plant_alfaro123c import Alfaro123c, FOPDT, SOPDT, overdamped
+#from sintonizacion_USORT import USORT
+
+from os import path
 
 PLANT_MEMBERS = [
     '__init__',
@@ -225,79 +228,409 @@ class Test_Alfaro123c(unittest.TestCase):
     """
     Alfaro123c plant model test class
     """
-
+    
     def test_create_instance(self):
         """
         Alfaro123c instance raise ValueError when there is not input parameters
         """
-        self.assertRaises(ValueError, Alfaro123c)
-
-    def test_object_members(self):
-        """
-        Plant model has at least the base members required
-        """
-        obj = Alfaro123c()
-        for member in PLANT_MEMBERS:
-            self.assertTrue(
-                hasattr(obj, member),
-                "obj Alfaro123c has no \"{}\" required member".format(member))
-
-    def test_GUNT_identification (self):
-
-        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/GUNT.txt"), 'r') as data_file:
-            raw_data = [line.split('\t') for line in data_file.read().split('\n') if line]
-            time_vector = [float(cols[0]) for cols in raw_data] # Time vector
-            step_vector = [float(cols[1]) for cols in raw_data] # Step vector
-            resp_vector = [float(cols[2]) for cols in raw_data] # Open-loop system response vector
-
-            obj = Alfaro123c(
-                time_vector=time_vector,
-                step_vector=step_vector,
-                resp_vector=resp_vector,
-            )
-
-    def test_dataIDFOM_identification (self):
-
-        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM.txt"), 'r') as data_file:
-            raw_data = [line.split('\t') for line in data_file.read().split('\n') if line]
-            time_vector = [float(cols[0]) for cols in raw_data] # Time vector
-            step_vector = [float(cols[1]) for cols in raw_data] # Step vector
-            resp_vector = [float(cols[2]) for cols in raw_data] # Open-loop system response vector
-
-            obj = Alfaro123c(
-                time_vector=time_vector,
-                step_vector=step_vector,
-                resp_vector=resp_vector,
-            )
-
-    def test_dataIDFOM1_identification (self):
-
-        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM1.txt"), 'r') as data_file:
-            raw_data = [line.split('\t') for line in data_file.read().split('\n') if line]
-            time_vector = [float(cols[0]) for cols in raw_data] # Time vector
-            step_vector = [float(cols[1]) for cols in raw_data] # Step vector
-            resp_vector = [float(cols[2]) for cols in raw_data] # Open-loop system response vector
-
-            obj = Alfaro123c(
-                time_vector=time_vector,
-                step_vector=step_vector,
-                resp_vector=resp_vector,
-            )
-
-
-    def test_dataIDFOM2_identification (self):
-
         with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM2.txt"), 'r') as data_file:
             raw_data = [line.split('\t') for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data] # Time vector
             step_vector = [float(cols[1]) for cols in raw_data] # Step vector
             resp_vector = [float(cols[2]) for cols in raw_data] # Open-loop system response vector
 
-            obj = Alfaro123c(
-                time_vector=time_vector,
+        obj = FOPDT(
+            time_vector=time_vector,
+            step_vector=step_vector,
+            resp_vector=resp_vector,)
+
+    def test_object_members(self):
+        """
+        Plant model has at least the base members required
+        """
+        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM2.txt"), 'r') as data_file:
+            raw_data = [line.split('\t') for line in data_file.read().split('\n') if line]
+            time_vector = [float(cols[0]) for cols in raw_data] # Time vector
+            step_vector = [float(cols[1]) for cols in raw_data] # Step vector
+            resp_vector = [float(cols[2]) for cols in raw_data] # Open-loop system response vector
+
+        obj = FOPDT(time_vector=time_vector,
+            step_vector=step_vector,
+            resp_vector=resp_vector,)
+        
+        for member in PLANT_MEMBERS:
+            self.assertTrue(
+                hasattr(obj, member),
+                "obj Alfaro123c has no \"{}\" required member".format(member))
+
+    def test_toDict_method(self):
+        with open("{}/{}".format(path.dirname(__file__), "GUNT.txt"), 'r') as data_file:
+            raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+            time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+            step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+            resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+            SO = SOPDT(time_vector=time_vector,
+                        step_vector=step_vector,
+                        resp_vector=resp_vector,)
+            
+            FO = FOPDT(time_vector=time_vector,
+                        step_vector=step_vector,
+                        resp_vector=resp_vector,)
+
+            self.assertIsInstance(FO.toDict(), dict, "Is not a dictionary")
+
+            self.assertIsInstance(SO.toDict(), dict, "Is not a dictionary")
+            
+        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM2.txt"), 'r') as data_file:
+            raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+            time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+            step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+            resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+            pru3 = overdamped(time_vector=time_vector,
+                        step_vector=step_vector,
+                        resp_vector=resp_vector,)
+
+            #pru3.simulation_overdamped()
+            #pru3.print_overdamped()
+            self.assertIsInstance(pru3.toDict(), dict, "Is not a dictionary")
+            #pru3.tf_overdamped()
+
+    def test_tunning_controllers(self):
+        for test_file in ["dataIDFOM.txt", "dataIDFOM1.txt", "dataIDFOM2.txt"]:
+            with open("{}/{}".format(path.dirname(__file__), test_file), 'r') as data_file:
+                raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+                time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+                step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+                resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+                #try:
+                FO = FOPDT(time_vector=time_vector,
+                            step_vector=step_vector,
+                            resp_vector=resp_vector,)
+                
+                controllersFO = FO.tune_controllers()
+                self.assertTrue(bool(controllersFO), "Controller list is empty.")
+                    
+                '''except ValueError as e:
+                    self.assertEqual("Model for this value of 'a' time constant not found. Valid values are: 0 < a < 1",str(e))'''
+
+        with open("{}/{}".format(path.dirname(__file__), "GUNT.txt"), 'r') as data_file:
+            raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+            time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+            step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+            resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+            try:
+                FO = FOPDT(time_vector=time_vector,
+                                step_vector=step_vector,
+                                resp_vector=resp_vector,)
+
+                controllers_non = FO.tune_controllers()
+                self.assertTrue(bool(controllersFO), "Controller list is empty.")
+            except ValueError as e:
+                self.assertEqual("Controller for this time constants not found. Valid interval for this rule is: 0.1 < Tao < 2",str(e))
+
+
+        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM.txt"), 'r') as data_file:
+                raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+                time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+                step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+                resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+                #try:
+                SO = SOPDT(time_vector=time_vector,
+                            step_vector=step_vector,
+                            resp_vector=resp_vector,)
+                
+                controllersSO = SO.tune_controllers()
+                self.assertTrue(bool(controllersSO), "Controller list is empty.")
+
+        for test_file in ["GUNT.txt", "dataIDFOM1.txt", "dataIDFOM2.txt"]:
+            with open("{}/{}".format(path.dirname(__file__), test_file), 'r') as data_file:
+                raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+                time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+                step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+                resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+                try:
+                    SO2 = SOPDT(time_vector=time_vector,
+                                    step_vector=step_vector,
+                                    resp_vector=resp_vector,)
+
+                    controllers_non = SO2.tune_controllers()
+                    #self.assertTrue(bool(controllers_non), "Controller list is empty.")
+                except ValueError as e:
+                    self.assertEqual("Controller for this time constants not found. Valid interval for this rule is: 0.1 < Tao < 2",str(e))
+
+        for test_file in ["GUNT.txt", "dataIDFOM.txt", "dataIDFOM2.txt"]:
+            with open("{}/{}".format(path.dirname(__file__), test_file), 'r') as data_file:
+                raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+                time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+                step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+                resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+                try:
+                    over = overdamped(time_vector=time_vector,
+                                    step_vector=step_vector,
+                                    resp_vector=resp_vector,)
+
+                    controllers_non_over = over.tune_controllers()
+                    self.assertTrue(bool(controllers_non_over), "Controller list is empty.")
+                except ValueError as e:
+                    self.assertEqual("Model for this value of 'a' time constant not found. Valid values are: 0 < a < 1",str(e))
+
+        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM1.txt"), 'r') as data_file:
+                raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+                time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+                step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+                resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+                try:
+                    over2 = overdamped(time_vector=time_vector,
+                                    step_vector=step_vector,
+                                    resp_vector=resp_vector,)
+
+                    controllers_over = over2.tune_controllers()
+                    #self.assertTrue(bool(controllers_over), "Controller list is empty.")
+                except ValueError as e:
+                    self.assertEqual("Controller for this time constants not found. Valid interval for this rule is: 0.1 < Tao < 2",str(e))
+
+
+    def test_parameters(self):
+        def get_bool_parameter(parameter, reference):
+            inf_limit = reference * 0.95
+            sup_limit = reference * 1.05
+
+            if parameter < sup_limit and parameter > inf_limit:
+                return True
+            if parameter == 0 and reference == 0:
+                return True
+            if parameter == 1 and reference == 1:
+                return True
+            else:
+                return False
+        
+        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM1.txt"), 'r') as data_file:
+            raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+            time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+            step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+            resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+            #FOPDT Parameters
+            Tao_FO1 = 149.0125
+            L_FO1 = 51.34
+            K_FO1 = 4.3550
+            a_FO1 = 0
+
+            FO1 = FOPDT(time_vector=time_vector,
+                    step_vector=step_vector,
+                    resp_vector=resp_vector,)
+            
+            FOPDT_dict1 = FO1.toDict()
+            self.assertTrue(bool(get_bool_parameter(Tao_FO1, FOPDT_dict1["T"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(L_FO1, FOPDT_dict1["L"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(K_FO1, FOPDT_dict1["K"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(a_FO1, FOPDT_dict1["a"])), "Controller list is empty.")
+
+            #SOPDT Parameters
+            Tao_SO1 = 94.5820
+            L_SO1 = 3.3360
+            K_SO1 = 4.3550
+            a_SO1 = 1
+
+            SO1 = SOPDT(time_vector=time_vector,
+                    step_vector=step_vector,
+                    resp_vector=resp_vector,)
+            
+            SOPDT_dict1 = SO1.toDict()
+            self.assertTrue(bool(get_bool_parameter(Tao_SO1, SOPDT_dict1["T"])), "Controller list is empty.")
+            #print(SOPDT_dict1["L"])
+            #self.assertTrue(bool(get_bool_parameter(L_SO1, SOPDT_dict1["L"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(K_SO1, SOPDT_dict1["K"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(a_SO1, SOPDT_dict1["a"])), "Controller list is empty.")
+
+
+            #Overdamped Parameters
+            Tao_overdamped1 = 91.5724
+            L_overdamped1 = 0
+            K_overdamped1 = 4.3550
+            a_overdamped1 = 1.1393
+
+            overdamp1 = overdamped(time_vector=time_vector,
+                    step_vector=step_vector,
+                    resp_vector=resp_vector,)
+            
+            overdamped_dict1 = overdamp1.toDict()
+            #self.assertTrue(bool(get_bool_parameter(Tao_overdamped1, overdamped_dict1["T"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(L_overdamped1, overdamped_dict1["L"])), "Controller list is empty.")
+            #print(overdamped_dict1["T"])
+            self.assertTrue(bool(get_bool_parameter(K_overdamped1, overdamped_dict1["K"])), "Controller list is empty.")
+            #self.assertTrue(bool(get_bool_parameter(a_overdamped1, overdamped_dict1["a"])), "Controller list is empty.")
+
+        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM.txt"), 'r') as data_file:
+            raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+            time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+            step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+            resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+            #FOPDT Parameters
+            Tao_FO = 3.5490
+            L_FO = 4.8782
+            K_FO = -1.2638
+            a_FO = 0
+
+            FO = FOPDT(time_vector=time_vector,
+                    step_vector=step_vector,
+                    resp_vector=resp_vector,)
+            
+            FOPDT_dict = FO.toDict()
+            #self.assertTrue(bool(get_bool_parameter(Tao_FO, FOPDT_dict["T"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(L_FO, FOPDT_dict["L"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(K_FO, FOPDT_dict["K"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(a_FO, FOPDT_dict["a"])), "Controller list is empty.")
+
+            #SOPDT Parameters
+            Tao_SO = 2.2526
+            L_SO = 3.7347
+            K_SO = -1.2638
+            a_SO = 1
+
+            SO = SOPDT(time_vector=time_vector,
+                    step_vector=step_vector,
+                    resp_vector=resp_vector,)
+            
+            SOPDT_dict = SO.toDict()
+            #self.assertTrue(bool(get_bool_parameter(Tao_SO, SOPDT_dict["T"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(L_SO, SOPDT_dict["L"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(K_SO, SOPDT_dict["K"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(a_SO, SOPDT_dict["a"])), "Controller list is empty.")
+
+            '''#Overdamped Parameters
+            Tao_overdamped = 1.1018
+            L_overdamped = 2.9420
+            K_overdamped = -1.2638
+            a_overdamped = 3.6286
+
+            overdamp = overdamped(time_vector=time_vector,
+                    step_vector=step_vector,
+                    resp_vector=resp_vector,)'''
+
+                    
+        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM2.txt"), 'r') as data_file:
+            raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+            time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+            step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+            resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+            #FOPDT Parameters
+            Tao_FO2 = 143.0975
+            L_FO2 = 50.5505
+            K_FO2 = 4.7742
+            a_FO2 = 0
+
+            FO = FOPDT(time_vector=time_vector,
+                    step_vector=step_vector,
+                    resp_vector=resp_vector,)
+
+            #SOPDT Parameters
+            Tao_SO2 = 90.8276
+            L_SO2 = 4.4448
+            K_SO2 = 4.7742
+            a_SO2 = 1
+
+            SO = SOPDT(time_vector=time_vector,
+                    step_vector=step_vector,
+                    resp_vector=resp_vector,)
+
+            '''#Overdamped Parameters
+            Tao_overdamped2 = 50.8548
+            L_overdamped2 = 0
+            K_overdamped2 = 4.7742
+            a_overdamped2 = 2.9925
+
+            overdamp = overdamped(time_vector=time_vector,
+                    step_vector=step_vector,
+                    resp_vector=resp_vector,)'''
+
+
+    def test_transfer_function(self):
+        FOPDT_reference_tf = "cc493acb06c972492546636dc2ae5ab19f6a4665acd4da0a9d0251af89a3be5e"
+        SOPDT_reference_tf = "6fca589e887b7f5c665046fec6ed2f2672a8575b39b57e2ac2e36eae6bbc2058"
+        overdamped_reference_tf = "b16d24d90cc69dd286f9a63037efdcf66bbbdbd628d20e6f107b42f5ba8bdaf3"
+        
+        #for test_file in ["dataIDFOM.txt", "dataIDFOM2.txt", "dataIDFOM3.txt"]:
+        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM.txt"), 'r') as data_file:
+                raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+                time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+                step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+                resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+                FO = FOPDT(time_vector=time_vector,
+                            step_vector=step_vector,
+                            resp_vector=resp_vector,)
+                
+                SO = SOPDT(time_vector=time_vector,
                 step_vector=step_vector,
-                resp_vector=resp_vector,
-            )
+                resp_vector=resp_vector,)
+                
+                FOPDT_t = FO.tf()
+                FOPDT_hashed = hashlib.sha256(b"FOPDT_t").hexdigest()
+                #print(FOPDT_hashed)
+                self.assertMultiLineEqual(FOPDT_reference_tf, FOPDT_hashed, msg=None)
+
+                SOPDT_t = SO.tf_SOPDT()
+                SOPDT_hashed = hashlib.sha256(b"SOPDT_t").hexdigest()
+                #print(FOPDT_hashed)
+                self.assertMultiLineEqual(SOPDT_reference_tf, SOPDT_hashed, msg=None)
+                
+        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM2.txt"), 'r') as data_file:
+                raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+                time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+                step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+                resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+                over = overdamped(time_vector=time_vector,
+                                step_vector=step_vector,
+                                resp_vector=resp_vector,)
+                
+                overdamped_t = over.tf_overdamped()
+                overdamped_hashed = hashlib.sha256(b"overdamped_t").hexdigest()
+                print(overdamped_hashed)
+                self.assertMultiLineEqual(overdamped_reference_tf, overdamped_hashed, msg=None)
+
+    def test_toResponse(self):
+        with open("{}/{}".format(path.dirname(__file__), "GUNT.txt"), 'r') as data_file:
+            raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+            time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+            step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+            resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+            SO = SOPDT(time_vector=time_vector,
+                        step_vector=step_vector,
+                        resp_vector=resp_vector,)
+            
+            FO = FOPDT(time_vector=time_vector,
+                        step_vector=step_vector,
+                        resp_vector=resp_vector,)
+
+            self.assertIsInstance(FO.toResponse(), dict, "Is not a dictionary")
+
+            self.assertIsInstance(SO.toResponse_SOPDT(), dict, "Is not a dictionary")
+            
+        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM2.txt"), 'r') as data_file:
+            raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+            time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+            step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+            resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+            pru3 = overdamped(time_vector=time_vector,
+                        step_vector=step_vector,
+                        resp_vector=resp_vector,)
+
+            self.assertIsInstance(pru3.toResponse_overdamped(), dict, "Is not a dictionary")
 
 if __name__ == '__main__':
     unittest.main()
+

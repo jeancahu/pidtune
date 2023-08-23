@@ -231,6 +231,8 @@ class Test_Alfaro123c(unittest.TestCase):
         """
         Alfaro123c instance raise ValueError when there is not input parameters
         """
+        self.assertRaises(ValueError, FOPDT)
+
         with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM2.txt"), 'r') as data_file:
             raw_data = [line.split('\t') for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data] # Time vector
@@ -247,10 +249,10 @@ class Test_Alfaro123c(unittest.TestCase):
         Plant model has at least the base members required
         """
         with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM2.txt"), 'r') as data_file:
-            raw_data = [line.split('\t') for line in data_file.read().split('\n') if line]
-            time_vector = [float(cols[0]) for cols in raw_data] # Time vector
-            step_vector = [float(cols[1]) for cols in raw_data] # Step vector
-            resp_vector = [float(cols[2]) for cols in raw_data] # Open-loop system response vector
+            raw_data    = [line.split('\t') for line in data_file.read().split('\n') if line]
+            time_vector = [float(cols[0]) for cols in raw_data] #  Time vector
+            step_vector = [float(cols[1]) for cols in raw_data] #  Step vector
+            resp_vector = [float(cols[2]) for cols in raw_data] #  Open-loop system response vector
 
         obj = FOPDT(time_vector=time_vector,
             step_vector=step_vector,

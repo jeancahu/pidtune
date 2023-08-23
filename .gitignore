@@ -6,6 +6,5 @@ build/
 dist/
 *egg-info
 
-*.txt
 *.xlsx
 *.xls

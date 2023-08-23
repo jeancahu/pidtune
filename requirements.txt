@@ -1,0 +1,4 @@
+openpyxl
+control
+typeguard
+pandas

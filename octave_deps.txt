@@ -1,0 +1,4 @@
+octave>=6.2.0
+octave-control==3.4.0
+octave-symbolic==2.9.0
+octave-optim==1.6.2

@@ -14,9 +14,13 @@ from pidtune import utils
 from pidtune.models import controller
 from pidtune.models import plant
 from pidtune.models import system as close_loop_system
+
+
+from pidtune.models.plant_alfaro123c import FOPDT, SOPDT, overdamped
+
+
 import unittest
-from plant_alfaro123c import Alfaro123c, FOPDT, SOPDT, overdamped
-#from sintonizacion_USORT import USORT
+
 
 PLANT_MEMBERS = [
     '__init__',
@@ -412,7 +416,7 @@ class Test_Alfaro123c(unittest.TestCase):
             else:
                 return False
 
-        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM1.txt"), 'r') as data_file:
+        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM1.txt"), 'r') as data_file:
             raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
             step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
@@ -424,15 +428,15 @@ class Test_Alfaro123c(unittest.TestCase):
             K_FO1 = 4.3550
             a_FO1 = 0
 
-            FO1 = FOPDT(time_vector=time_vector,
+            FO = FOPDT(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)
 
-            FOPDT_dict1 = FO1.toDict()
-            self.assertTrue(bool(get_bool_parameter(Tao_FO1, FOPDT_dict1["T"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(L_FO1, FOPDT_dict1["L"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(K_FO1, FOPDT_dict1["K"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(a_FO1, FOPDT_dict1["a"])), "Controller list is empty.")
+            FOPDT_dict = FO.toDict()
+            self.assertTrue(bool(get_bool_parameter(Tao_FO1, FOPDT_dict["T"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(L_FO1, FOPDT_dict["L"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(K_FO1, FOPDT_dict["K"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(a_FO1, FOPDT_dict["a"])), "Controller list is empty.")
 
             #SOPDT Parameters
             Tao_SO1 = 94.5820
@@ -440,17 +444,16 @@ class Test_Alfaro123c(unittest.TestCase):
             K_SO1 = 4.3550
             a_SO1 = 1
 
-            SO1 = SOPDT(time_vector=time_vector,
+            SO = SOPDT(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)
 
-            SOPDT_dict1 = SO1.toDict()
-            self.assertTrue(bool(get_bool_parameter(Tao_SO1, SOPDT_dict1["T"])), "Controller list is empty.")
-            #print(SOPDT_dict1["L"])
-            #self.assertTrue(bool(get_bool_parameter(L_SO1, SOPDT_dict1["L"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(K_SO1, SOPDT_dict1["K"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(a_SO1, SOPDT_dict1["a"])), "Controller list is empty.")
-
+            SOPDT_dict = SO.toDict()
+            self.assertTrue(bool(get_bool_parameter(Tao_SO1, SOPDT_dict["T"])), "Controller list is empty.")
+            #print(SOPDT_dict["L"])
+            #self.assertTrue(bool(get_bool_parameter(L_SO1, SOPDT_dict["L"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(K_SO1, SOPDT_dict["K"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(a_SO1, SOPDT_dict["a"])), "Controller list is empty.")
 
             #Overdamped Parameters
             Tao_overdamped1 = 91.5724
@@ -458,18 +461,19 @@ class Test_Alfaro123c(unittest.TestCase):
             K_overdamped1 = 4.3550
             a_overdamped1 = 1.1393
 
-            overdamp1 = overdamped(time_vector=time_vector,
+            overdamp = overdamped(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)
 
-            overdamped_dict1 = overdamp1.toDict()
-            #self.assertTrue(bool(get_bool_parameter(Tao_overdamped1, overdamped_dict1["T"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(L_overdamped1, overdamped_dict1["L"])), "Controller list is empty.")
-            #print(overdamped_dict1["T"])
-            self.assertTrue(bool(get_bool_parameter(K_overdamped1, overdamped_dict1["K"])), "Controller list is empty.")
-            #self.assertTrue(bool(get_bool_parameter(a_overdamped1, overdamped_dict1["a"])), "Controller list is empty.")
+            overdamped_dict = overdamp.toDict()
+            #self.assertTrue(bool(get_bool_parameter(Tao_overdamped1, overdamped_dict["T"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(L_overdamped1, overdamped_dict["L"])), "Controller list is empty.")
+            #print(overdamped_dict["T"])
+            self.assertTrue(bool(get_bool_parameter(K_overdamped1, overdamped_dict["K"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(a_overdamped1, overdamped_dict["a"])), "Controller list is empty.")
 
-        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM.txt"), 'r') as data_file:
+
+        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM.txt"), 'r') as data_file:
             raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
             step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
@@ -487,9 +491,9 @@ class Test_Alfaro123c(unittest.TestCase):
 
             FOPDT_dict = FO.toDict()
             #self.assertTrue(bool(get_bool_parameter(Tao_FO, FOPDT_dict["T"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(L_FO, FOPDT_dict["L"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(K_FO, FOPDT_dict["K"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(a_FO, FOPDT_dict["a"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(L_FO, FOPDT_dict["L"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(K_FO, FOPDT_dict["K"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(a_FO, FOPDT_dict["a"])), "The parameter result is out of the valid range.")
 
             #SOPDT Parameters
             Tao_SO = 2.2526
@@ -503,9 +507,9 @@ class Test_Alfaro123c(unittest.TestCase):
 
             SOPDT_dict = SO.toDict()
             #self.assertTrue(bool(get_bool_parameter(Tao_SO, SOPDT_dict["T"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(L_SO, SOPDT_dict["L"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(K_SO, SOPDT_dict["K"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(a_SO, SOPDT_dict["a"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(L_SO, SOPDT_dict["L"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(K_SO, SOPDT_dict["K"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(a_SO, SOPDT_dict["a"])), "The parameter result is out of the valid range.")
 
             '''#Overdamped Parameters
             Tao_overdamped = 1.1018
@@ -518,7 +522,7 @@ class Test_Alfaro123c(unittest.TestCase):
                     resp_vector=resp_vector,)'''
 
 
-        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM2.txt"), 'r') as data_file:
+        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM2.txt"), 'r') as data_file:
             raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
             step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
@@ -530,9 +534,15 @@ class Test_Alfaro123c(unittest.TestCase):
             K_FO2 = 4.7742
             a_FO2 = 0
 
-            FO = FOPDT(time_vector=time_vector,
+            FO2 = FOPDT(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)
+
+            FOPDT2_dict = FO2.toDict()
+            self.assertTrue(bool(get_bool_parameter(Tao_FO2, FOPDT2_dict["T"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(L_FO2, FOPDT2_dict["L"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(K_FO2, FOPDT2_dict["K"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(a_FO2, FOPDT2_dict["a"])), "The parameter result is out of the valid range.")
 
             #SOPDT Parameters
             Tao_SO2 = 90.8276
@@ -540,9 +550,15 @@ class Test_Alfaro123c(unittest.TestCase):
             K_SO2 = 4.7742
             a_SO2 = 1
 
-            SO = SOPDT(time_vector=time_vector,
+            SO2 = SOPDT(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)
+
+            SOPDT2_dict = SO2.toDict()
+            self.assertTrue(bool(get_bool_parameter(Tao_SO2, SOPDT2_dict["T"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(L_SO2, SOPDT2_dict["L"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(K_SO2, SOPDT2_dict["K"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(a_SO2, SOPDT2_dict["a"])), "The parameter result is out of the valid range.")
 
             '''#Overdamped Parameters
             Tao_overdamped2 = 50.8548
@@ -553,6 +569,42 @@ class Test_Alfaro123c(unittest.TestCase):
             overdamp = overdamped(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)'''
+
+        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/GUNT.txt"), 'r') as data_file:
+            raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
+            time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
+            step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
+            resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
+
+            Tao_FOG = 33.67
+            L_FOG = 2.3060
+            K_FOG = 4.9745
+            a_FOG = 0
+
+            FOG = FOPDT(time_vector=time_vector,
+                    step_vector=step_vector,
+                    resp_vector=resp_vector,)
+
+            FOPDTG_dict = FOG.toDict()
+            self.assertTrue(bool(get_bool_parameter(Tao_FOG, FOPDTG_dict["T"])), "The parameter result is out of the valid range.")
+            #self.assertTrue(bool(get_bool_parameter(L_FOG, FOPDTG_dict["L"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(K_FOG, FOPDTG_dict["K"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(a_FOG, FOPDTG_dict["a"])), "The parameter result is out of the valid range.")
+
+            Tao_SOG = 21.3712
+            L_SOG = 0
+            K_SOG = 4.9745
+            a_SOG = 1
+
+            SOG = SOPDT(time_vector=time_vector,
+                    step_vector=step_vector,
+                    resp_vector=resp_vector,)
+
+            SOPDTG_dict = SOG.toDict()
+            self.assertTrue(bool(get_bool_parameter(Tao_SOG, SOPDTG_dict["T"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(L_SOG, SOPDTG_dict["L"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(K_SOG, SOPDTG_dict["K"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(a_SOG, SOPDTG_dict["a"])), "The parameter result is out of the valid range.")
 
 
     def test_transfer_function(self):

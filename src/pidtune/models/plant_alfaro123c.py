@@ -6,7 +6,7 @@ import scipy.signal as signal
 from io import StringIO
 from scipy.signal import savgol_filter
 from os import path
-from sintonizacion_USORT import USORT
+from ..rules import usort
 import hashlib
 
 
@@ -313,7 +313,7 @@ class Alfaro123c():
             return json
     
     def tune_controllers(self): 
-        rule = USORT()
+        rule = usort()
 
         controllers = list()
 

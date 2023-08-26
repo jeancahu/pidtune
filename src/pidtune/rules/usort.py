@@ -3,12 +3,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import control as ctl
 import scipy.signal as signal
-from controller import Controller
+from ..models.controller import Controller
 
 valid_controllers = ('PID', 'PI')
 valid_Ms = ('1.4', '1.6', '1.8', '2.0')
 
-class USORT():
+class usort():
     def __init__(self
                  ):
         # Global variables for Time values
@@ -208,11 +208,11 @@ class USORT():
         a2f = a_final_values[2]
 
         # Get both proportional gains
-        Kp1 = USORT.calculate_Kp(self, a0i, a1i, a2i, Tao, dc_gain)
-        Kp2 = USORT.calculate_Kp(self, a0f, a1f, a2f, Tao, dc_gain)
+        Kp1 = usort.calculate_Kp(self, a0i, a1i, a2i, Tao, dc_gain)
+        Kp2 = usort.calculate_Kp(self, a0f, a1f, a2f, Tao, dc_gain)
 
         # Get the final model proportional gain
-        Kp = USORT.interpolate(self, limit_1, limit_2, Kp1, Kp2, constant_a)
+        Kp = usort.interpolate(self, limit_1, limit_2, Kp1, Kp2, constant_a)
 
         if control_mode == 'Regulatory':
             # Get first limit of 'b' values:
@@ -226,11 +226,11 @@ class USORT():
             b2f = b_final_values[5]
 
             # Get both Integral Times
-            Ti1 = USORT.calculate_Ti_regulatory(self, b0i, b1i, b2i, Tao, time_constant)
-            Ti2 = USORT.calculate_Ti_regulatory(self, b0f, b1f, b2f, Tao, time_constant)
+            Ti1 = usort.calculate_Ti_regulatory(self, b0i, b1i, b2i, Tao, time_constant)
+            Ti2 = usort.calculate_Ti_regulatory(self, b0f, b1f, b2f, Tao, time_constant)
 
             # Get the model final Integral Time
-            self.Ti = USORT.interpolate(self, limit_1, limit_2, Ti1, Ti2, constant_a)
+            self.Ti = usort.interpolate(self, limit_1, limit_2, Ti1, Ti2, constant_a)
 
             if controller_type == 'PID'and ms_key == 'MS14' and constant_a < 0.25 and Tao < 0.4:
                 raise ValueError(f"Controller for this values constants not found. Valid interval for this rule is: a > 0.25 and Tao > 0.4")
@@ -250,11 +250,11 @@ class USORT():
                 c2f = final_c_values[8]
 
                 # Get both derivative times
-                Td1 = USORT.calculate_Td_regulatory(self, c0i, c1i, c2i, Tao, time_constant)
-                Td2 = USORT.calculate_Td_regulatory(self, c0f, c1f, c2f, Tao, time_constant)
+                Td1 = usort.calculate_Td_regulatory(self, c0i, c1i, c2i, Tao, time_constant)
+                Td2 = usort.calculate_Td_regulatory(self, c0f, c1f, c2f, Tao, time_constant)
 
                 # Get the model final derivative time
-                self.Td = USORT.interpolate(self, limit_1, limit_2, Td1, Td2, constant_a)
+                self.Td = usort.interpolate(self, limit_1, limit_2, Td1, Td2, constant_a)
 
             else:
                 self.Td = 0
@@ -298,11 +298,11 @@ class USORT():
             b3f = b_final_values[6]
 
             # Get both Integral Times
-            Ti1 = USORT.calculate_Ti_servo(self, b0i, b1i, b2i, b3i, Tao, time_constant)
-            Ti2 = USORT.calculate_Ti_servo(self, b0f, b1f, b2f, b3f, Tao, time_constant)
+            Ti1 = usort.calculate_Ti_servo(self, b0i, b1i, b2i, b3i, Tao, time_constant)
+            Ti2 = usort.calculate_Ti_servo(self, b0f, b1f, b2f, b3f, Tao, time_constant)
 
             # Get the model final Integral Time
-            self.Ti = USORT.interpolate(self, limit_1, limit_2, Ti1, Ti2, constant_a)
+            self.Ti = usort.interpolate(self, limit_1, limit_2, Ti1, Ti2, constant_a)
 
             if controller_type == 'PID':
                 initial_c_values = self.Alfaro123c_rule[control_mode][controller_type]['MS14'][str(limit_1)]
@@ -319,11 +319,11 @@ class USORT():
                 c2f = final_c_values[9]
 
                 # Get both derivative times
-                Td1 = USORT.calculate_Td_servo(self, c0i, c1i, c2i, Tao, time_constant)
-                Td2 = USORT.calculate_Td_servo(self, c0f, c1f, c2f, Tao, time_constant)
+                Td1 = usort.calculate_Td_servo(self, c0i, c1i, c2i, Tao, time_constant)
+                Td2 = usort.calculate_Td_servo(self, c0f, c1f, c2f, Tao, time_constant)
 
                 # Get the model final derivative time
-                self.Td = USORT.interpolate(self, limit_1, limit_2, Td1, Td2, constant_a)
+                self.Td = usort.interpolate(self, limit_1, limit_2, Td1, Td2, constant_a)
             else:
                 self.Td = 0
 
@@ -356,8 +356,8 @@ class USORT():
 
         print(Tao)
 
-        # If is in USORT restriction interval, raise an error
-        if Tao < 0.1000 or Tao > 2: # USORT restriction
+        # If is in usort restriction interval, raise an error
+        if Tao < 0.1000 or Tao > 2: # usort restriction
             raise ValueError(f"Controller for this time constants not found. Valid interval for this rule is: 0.1 < Tao < 2")
 
         # Check if the parameters are valid
@@ -375,30 +375,30 @@ class USORT():
         # Calculates PI or PID regulatory parameters
         if control_mode == 'Regulatory':
             if constant_a >= 0 and constant_a < 0.25:
-                self.Parameters=USORT.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0, 0.25, DoF)
+                self.Parameters=usort.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0, 0.25, DoF)
 
             elif constant_a >= 0.25 and constant_a < 0.50:
-                self.Parameters=USORT.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0.25, 0.50, DoF)
+                self.Parameters=usort.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0.25, 0.50, DoF)
 
             elif constant_a >= 0.50 and constant_a < 0.75:
-                self.Parameters=USORT.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0.50, 0.75, DoF)
+                self.Parameters=usort.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0.50, 0.75, DoF)
 
             elif constant_a >= 0.75 and constant_a <= 1:
-                self.Parameters=USORT.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0.75, 1, DoF)
+                self.Parameters=usort.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0.75, 1, DoF)
 
         # Repeats the process for servo control, but without the Regulatory PID Ms 1.4 restriction
         elif control_mode == 'Servo':
             if constant_a >= 0 and constant_a < 0.25:
-                self.Parameters=USORT.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0, 0.25, DoF)
+                self.Parameters=usort.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0, 0.25, DoF)
 
             elif constant_a >= 0.25 and constant_a < 0.50:
-                self.Parameters=USORT.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0.25, 0.50, DoF)
+                self.Parameters=usort.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0.25, 0.50, DoF)
 
             elif constant_a >= 0.50 and constant_a < 0.75:
-                self.Parameters=USORT.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0.5, 0.75, DoF)
+                self.Parameters=usort.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0.5, 0.75, DoF)
 
             elif constant_a >= 0.75 and constant_a <= 1:
-                self.Parameters=USORT.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0.75, 1, DoF)
+                self.Parameters=usort.interpolated_parameters(self,control_mode, controller_type, constant_a, ms_key, time_constant,Tao, dc_gain, 0.75, 1, DoF)
 
         #print(self.Parameters)
         #print(type(self.Parameters))

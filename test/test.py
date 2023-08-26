@@ -20,8 +20,6 @@ from pidtune.models.plant_alfaro123c import FOPDT,SOPDT, overdamped
 import unittest
 
 
-from os import path
-
 PLANT_MEMBERS = [
     '__init__',
     'tf',
@@ -230,7 +228,7 @@ class Test_Alfaro123c(unittest.TestCase):
     """
     Alfaro123c plant model test class
     """
-    
+
     def test_create_instance(self):
         """
         Alfaro123c instance raise ValueError when there is not input parameters
@@ -259,7 +257,7 @@ class Test_Alfaro123c(unittest.TestCase):
         obj = FOPDT(time_vector=time_vector,
             step_vector=step_vector,
             resp_vector=resp_vector,)
-        
+
         for member in PLANT_MEMBERS:
             self.assertTrue(
                 hasattr(obj, member),
@@ -275,7 +273,7 @@ class Test_Alfaro123c(unittest.TestCase):
             SO = SOPDT(time_vector=time_vector,
                         step_vector=step_vector,
                         resp_vector=resp_vector,)
-            
+
             FO = FOPDT(time_vector=time_vector,
                         step_vector=step_vector,
                         resp_vector=resp_vector,)
@@ -283,7 +281,7 @@ class Test_Alfaro123c(unittest.TestCase):
             self.assertIsInstance(FO.toDict(), dict, "Is not a dictionary")
 
             self.assertIsInstance(SO.toDict(), dict, "Is not a dictionary")
-            
+
         with open("{}/{}".format(path.dirname(__file__), "dataIDFOM2.txt"), 'r') as data_file:
             raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
@@ -311,10 +309,10 @@ class Test_Alfaro123c(unittest.TestCase):
                 FO = FOPDT(time_vector=time_vector,
                             step_vector=step_vector,
                             resp_vector=resp_vector,)
-                
+
                 controllersFO = FO.tune_controllers()
                 self.assertTrue(bool(controllersFO), "Controller list is empty.")
-                    
+
                 '''except ValueError as e:
                     self.assertEqual("Model for this value of 'a' time constant not found. Valid values are: 0 < a < 1",str(e))'''
 
@@ -345,7 +343,7 @@ class Test_Alfaro123c(unittest.TestCase):
                 SO = SOPDT(time_vector=time_vector,
                             step_vector=step_vector,
                             resp_vector=resp_vector,)
-                
+
                 controllersSO = SO.tune_controllers()
                 self.assertTrue(bool(controllersSO), "Controller list is empty.")
 
@@ -413,7 +411,7 @@ class Test_Alfaro123c(unittest.TestCase):
                 return True
             else:
                 return False
-        
+
         with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM1.txt"), 'r') as data_file:
             raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
@@ -429,7 +427,7 @@ class Test_Alfaro123c(unittest.TestCase):
             FO = FOPDT(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)
-            
+
             FOPDT_dict = FO.toDict()
             self.assertTrue(bool(get_bool_parameter(Tao_FO1, FOPDT_dict["T"])), "Controller list is empty.")
             self.assertTrue(bool(get_bool_parameter(L_FO1, FOPDT_dict["L"])), "Controller list is empty.")
@@ -445,7 +443,7 @@ class Test_Alfaro123c(unittest.TestCase):
             SO = SOPDT(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)
-            
+
             SOPDT_dict = SO.toDict()
             self.assertTrue(bool(get_bool_parameter(Tao_SO1, SOPDT_dict["T"])), "Controller list is empty.")
             #print(SOPDT_dict["L"])
@@ -463,7 +461,7 @@ class Test_Alfaro123c(unittest.TestCase):
             overdamp = overdamped(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)
-            
+
             overdamped_dict = overdamp.toDict()
             #self.assertTrue(bool(get_bool_parameter(Tao_overdamped1, overdamped_dict["T"])), "Controller list is empty.")
             self.assertTrue(bool(get_bool_parameter(L_overdamped1, overdamped_dict["L"])), "Controller list is empty.")
@@ -487,7 +485,7 @@ class Test_Alfaro123c(unittest.TestCase):
             FO = FOPDT(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)
-            
+
             FOPDT_dict = FO.toDict()
             #self.assertTrue(bool(get_bool_parameter(Tao_FO, FOPDT_dict["T"])), "Controller list is empty.")
             self.assertTrue(bool(get_bool_parameter(L_FO, FOPDT_dict["L"])), "The parameter result is out of the valid range.")
@@ -503,7 +501,7 @@ class Test_Alfaro123c(unittest.TestCase):
             SO = SOPDT(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)
-            
+
             SOPDT_dict = SO.toDict()
             #self.assertTrue(bool(get_bool_parameter(Tao_SO, SOPDT_dict["T"])), "Controller list is empty.")
             self.assertTrue(bool(get_bool_parameter(L_SO, SOPDT_dict["L"])), "The parameter result is out of the valid range.")
@@ -520,7 +518,7 @@ class Test_Alfaro123c(unittest.TestCase):
                     step_vector=step_vector,
                     resp_vector=resp_vector,)'''
 
-                    
+
         with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM2.txt"), 'r') as data_file:
             raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
@@ -536,7 +534,7 @@ class Test_Alfaro123c(unittest.TestCase):
             FO2 = FOPDT(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)
-            
+
             FOPDT2_dict = FO2.toDict()
             self.assertTrue(bool(get_bool_parameter(Tao_FO2, FOPDT2_dict["T"])), "The parameter result is out of the valid range.")
             self.assertTrue(bool(get_bool_parameter(L_FO2, FOPDT2_dict["L"])), "The parameter result is out of the valid range.")
@@ -552,7 +550,7 @@ class Test_Alfaro123c(unittest.TestCase):
             SO2 = SOPDT(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)
-            
+
             SOPDT2_dict = SO2.toDict()
             self.assertTrue(bool(get_bool_parameter(Tao_SO2, SOPDT2_dict["T"])), "The parameter result is out of the valid range.")
             self.assertTrue(bool(get_bool_parameter(L_SO2, SOPDT2_dict["L"])), "The parameter result is out of the valid range.")
@@ -568,7 +566,7 @@ class Test_Alfaro123c(unittest.TestCase):
             overdamp = overdamped(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)'''
-        
+
         with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/GUNT.txt"), 'r') as data_file:
             raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
@@ -578,12 +576,12 @@ class Test_Alfaro123c(unittest.TestCase):
             Tao_FOG = 33.67
             L_FOG = 2.3060
             K_FOG = 4.9745
-            a_FOG = 0 
+            a_FOG = 0
 
             FOG = FOPDT(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)
-            
+
             FOPDTG_dict = FOG.toDict()
             self.assertTrue(bool(get_bool_parameter(Tao_FOG, FOPDTG_dict["T"])), "The parameter result is out of the valid range.")
             #self.assertTrue(bool(get_bool_parameter(L_FOG, FOPDTG_dict["L"])), "The parameter result is out of the valid range.")
@@ -598,7 +596,7 @@ class Test_Alfaro123c(unittest.TestCase):
             SOG = SOPDT(time_vector=time_vector,
                     step_vector=step_vector,
                     resp_vector=resp_vector,)
-            
+
             SOPDTG_dict = SOG.toDict()
             self.assertTrue(bool(get_bool_parameter(Tao_SOG, SOPDTG_dict["T"])), "The parameter result is out of the valid range.")
             self.assertTrue(bool(get_bool_parameter(L_SOG, SOPDTG_dict["L"])), "The parameter result is out of the valid range.")
@@ -610,7 +608,7 @@ class Test_Alfaro123c(unittest.TestCase):
         FOPDT_reference_tf = "cc493acb06c972492546636dc2ae5ab19f6a4665acd4da0a9d0251af89a3be5e"
         SOPDT_reference_tf = "6fca589e887b7f5c665046fec6ed2f2672a8575b39b57e2ac2e36eae6bbc2058"
         overdamped_reference_tf = "b16d24d90cc69dd286f9a63037efdcf66bbbdbd628d20e6f107b42f5ba8bdaf3"
-        
+
         #for test_file in ["dataIDFOM.txt", "dataIDFOM2.txt", "dataIDFOM3.txt"]:
         with open("{}/{}".format(path.dirname(__file__), "dataIDFOM.txt"), 'r') as data_file:
                 raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
@@ -621,11 +619,11 @@ class Test_Alfaro123c(unittest.TestCase):
                 FO = FOPDT(time_vector=time_vector,
                             step_vector=step_vector,
                             resp_vector=resp_vector,)
-                
+
                 SO = SOPDT(time_vector=time_vector,
                 step_vector=step_vector,
                 resp_vector=resp_vector,)
-                
+
                 FOPDT_t = FO.tf()
                 FOPDT_hashed = hashlib.sha256(b"FOPDT_t").hexdigest()
                 #print(FOPDT_hashed)
@@ -635,7 +633,7 @@ class Test_Alfaro123c(unittest.TestCase):
                 SOPDT_hashed = hashlib.sha256(b"SOPDT_t").hexdigest()
                 #print(FOPDT_hashed)
                 self.assertMultiLineEqual(SOPDT_reference_tf, SOPDT_hashed, msg=None)
-                
+
         with open("{}/{}".format(path.dirname(__file__), "dataIDFOM2.txt"), 'r') as data_file:
                 raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
                 time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
@@ -645,7 +643,7 @@ class Test_Alfaro123c(unittest.TestCase):
                 over = overdamped(time_vector=time_vector,
                                 step_vector=step_vector,
                                 resp_vector=resp_vector,)
-                
+
                 overdamped_t = over.tf_overdamped()
                 overdamped_hashed = hashlib.sha256(b"overdamped_t").hexdigest()
                 print(overdamped_hashed)
@@ -661,7 +659,7 @@ class Test_Alfaro123c(unittest.TestCase):
             SO = SOPDT(time_vector=time_vector,
                         step_vector=step_vector,
                         resp_vector=resp_vector,)
-            
+
             FO = FOPDT(time_vector=time_vector,
                         step_vector=step_vector,
                         resp_vector=resp_vector,)
@@ -669,7 +667,7 @@ class Test_Alfaro123c(unittest.TestCase):
             self.assertIsInstance(FO.toResponse(), dict, "Is not a dictionary")
 
             self.assertIsInstance(SO.toResponse_SOPDT(), dict, "Is not a dictionary")
-            
+
         with open("{}/{}".format(path.dirname(__file__), "dataIDFOM2.txt"), 'r') as data_file:
             raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
@@ -684,4 +682,3 @@ class Test_Alfaro123c(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

@@ -6,7 +6,7 @@ import scipy.signal as signal
 from io import StringIO
 from scipy.signal import savgol_filter
 from os import path
-from ..rules import usort
+from ..rules.usort import usort
 import hashlib
 
 

@@ -5,9 +5,6 @@ import control as ctl
 import scipy.signal as signal
 from ..models.controller import Controller
 
-valid_controllers = ('PID', 'PI')
-valid_Ms = ('1.4', '1.6', '1.8', '2.0')
-
 class usort():
     def __init__(self
                  ):
@@ -403,3 +400,4 @@ class usort():
         #print(self.Parameters)
         #print(type(self.Parameters))
         return(self.Parameters)
+

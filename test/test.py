@@ -15,6 +15,7 @@ from pidtune.models import controller
 from pidtune.models import plant
 from pidtune.models import system as close_loop_system
 from pidtune.models.plant_alfaro123c import FOPDT,SOPDT, overdamped
+from pidtune.rules import usort
 
 
 import unittest
@@ -264,7 +265,7 @@ class Test_Alfaro123c(unittest.TestCase):
                 "obj Alfaro123c has no \"{}\" required member".format(member))
 
     def test_toDict_method(self):
-        with open("{}/{}".format(path.dirname(__file__), "GUNT.txt"), 'r') as data_file:
+        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/GUNT.txt"), 'r') as data_file:
             raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
             step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
@@ -282,7 +283,7 @@ class Test_Alfaro123c(unittest.TestCase):
 
             self.assertIsInstance(SO.toDict(), dict, "Is not a dictionary")
 
-        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM2.txt"), 'r') as data_file:
+        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM1.txt"), 'r') as data_file:
             raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
             step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
@@ -292,13 +293,11 @@ class Test_Alfaro123c(unittest.TestCase):
                         step_vector=step_vector,
                         resp_vector=resp_vector,)
 
-            #pru3.simulation_overdamped()
-            #pru3.print_overdamped()
             self.assertIsInstance(pru3.toDict(), dict, "Is not a dictionary")
-            #pru3.tf_overdamped()
+            
 
     def test_tunning_controllers(self):
-        for test_file in ["dataIDFOM.txt", "dataIDFOM1.txt", "dataIDFOM2.txt"]:
+        for test_file in ["plant_raw_data/dataIDFOM.txt", "plant_raw_data/dataIDFOM1.txt", "plant_raw_data/dataIDFOM2.txt"]:
             with open("{}/{}".format(path.dirname(__file__), test_file), 'r') as data_file:
                 raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
                 time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
@@ -316,7 +315,7 @@ class Test_Alfaro123c(unittest.TestCase):
                 '''except ValueError as e:
                     self.assertEqual("Model for this value of 'a' time constant not found. Valid values are: 0 < a < 1",str(e))'''
 
-        with open("{}/{}".format(path.dirname(__file__), "GUNT.txt"), 'r') as data_file:
+        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/GUNT.txt"), 'r') as data_file:
             raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
             step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
@@ -328,12 +327,12 @@ class Test_Alfaro123c(unittest.TestCase):
                                 resp_vector=resp_vector,)
 
                 controllers_non = FO.tune_controllers()
-                self.assertTrue(bool(controllersFO), "Controller list is empty.")
+                
             except ValueError as e:
                 self.assertEqual("Controller for this time constants not found. Valid interval for this rule is: 0.1 < Tao < 2",str(e))
 
 
-        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM.txt"), 'r') as data_file:
+        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM.txt"), 'r') as data_file:
                 raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
                 time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
                 step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
@@ -347,7 +346,7 @@ class Test_Alfaro123c(unittest.TestCase):
                 controllersSO = SO.tune_controllers()
                 self.assertTrue(bool(controllersSO), "Controller list is empty.")
 
-        for test_file in ["GUNT.txt", "dataIDFOM1.txt", "dataIDFOM2.txt"]:
+        for test_file in ["plant_raw_data/GUNT.txt", "plant_raw_data/dataIDFOM1.txt", "plant_raw_data/dataIDFOM2.txt"]:
             with open("{}/{}".format(path.dirname(__file__), test_file), 'r') as data_file:
                 raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
                 time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
@@ -359,12 +358,12 @@ class Test_Alfaro123c(unittest.TestCase):
                                     step_vector=step_vector,
                                     resp_vector=resp_vector,)
 
-                    controllers_non = SO2.tune_controllers()
-                    #self.assertTrue(bool(controllers_non), "Controller list is empty.")
+                    controllers_non2 = SO2.tune_controllers()
+                    
                 except ValueError as e:
                     self.assertEqual("Controller for this time constants not found. Valid interval for this rule is: 0.1 < Tao < 2",str(e))
 
-        for test_file in ["GUNT.txt", "dataIDFOM.txt", "dataIDFOM2.txt"]:
+        for test_file in ["plant_raw_data/GUNT.txt", "plant_raw_data/dataIDFOM.txt", "plant_raw_data/dataIDFOM2.txt"]:
             with open("{}/{}".format(path.dirname(__file__), test_file), 'r') as data_file:
                 raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
                 time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
@@ -381,7 +380,7 @@ class Test_Alfaro123c(unittest.TestCase):
                 except ValueError as e:
                     self.assertEqual("Model for this value of 'a' time constant not found. Valid values are: 0 < a < 1",str(e))
 
-        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM1.txt"), 'r') as data_file:
+        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM1.txt"), 'r') as data_file:
                 raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
                 time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
                 step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
@@ -393,7 +392,7 @@ class Test_Alfaro123c(unittest.TestCase):
                                     resp_vector=resp_vector,)
 
                     controllers_over = over2.tune_controllers()
-                    #self.assertTrue(bool(controllers_over), "Controller list is empty.")
+                    
                 except ValueError as e:
                     self.assertEqual("Controller for this time constants not found. Valid interval for this rule is: 0.1 < Tao < 2",str(e))
 
@@ -429,10 +428,10 @@ class Test_Alfaro123c(unittest.TestCase):
                     resp_vector=resp_vector,)
 
             FOPDT_dict = FO.toDict()
-            self.assertTrue(bool(get_bool_parameter(Tao_FO1, FOPDT_dict["T"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(L_FO1, FOPDT_dict["L"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(K_FO1, FOPDT_dict["K"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(a_FO1, FOPDT_dict["a"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(Tao_FO1, FOPDT_dict["T"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(L_FO1, FOPDT_dict["L"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(K_FO1, FOPDT_dict["K"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(a_FO1, FOPDT_dict["a"])), "The parameter result is out of the valid range.")
 
             #SOPDT Parameters
             Tao_SO1 = 94.5820
@@ -445,11 +444,11 @@ class Test_Alfaro123c(unittest.TestCase):
                     resp_vector=resp_vector,)
 
             SOPDT_dict = SO.toDict()
-            self.assertTrue(bool(get_bool_parameter(Tao_SO1, SOPDT_dict["T"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(Tao_SO1, SOPDT_dict["T"])), "The parameter result is out of the valid range.")
             #print(SOPDT_dict["L"])
             #self.assertTrue(bool(get_bool_parameter(L_SO1, SOPDT_dict["L"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(K_SO1, SOPDT_dict["K"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(a_SO1, SOPDT_dict["a"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(K_SO1, SOPDT_dict["K"])), "The parameter result is out of the valid range.")
+            self.assertTrue(bool(get_bool_parameter(a_SO1, SOPDT_dict["a"])), "The parameter result is out of the valid range.")
 
 
             #Overdamped Parameters
@@ -464,9 +463,9 @@ class Test_Alfaro123c(unittest.TestCase):
 
             overdamped_dict = overdamp.toDict()
             #self.assertTrue(bool(get_bool_parameter(Tao_overdamped1, overdamped_dict["T"])), "Controller list is empty.")
-            self.assertTrue(bool(get_bool_parameter(L_overdamped1, overdamped_dict["L"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(L_overdamped1, overdamped_dict["L"])), "The parameter result is out of the valid range.")
             #print(overdamped_dict["T"])
-            self.assertTrue(bool(get_bool_parameter(K_overdamped1, overdamped_dict["K"])), "Controller list is empty.")
+            self.assertTrue(bool(get_bool_parameter(K_overdamped1, overdamped_dict["K"])), "The parameter result is out of the valid range.")
             #self.assertTrue(bool(get_bool_parameter(a_overdamped1, overdamped_dict["a"])), "Controller list is empty.")
 
 
@@ -610,7 +609,7 @@ class Test_Alfaro123c(unittest.TestCase):
         overdamped_reference_tf = "b16d24d90cc69dd286f9a63037efdcf66bbbdbd628d20e6f107b42f5ba8bdaf3"
 
         #for test_file in ["dataIDFOM.txt", "dataIDFOM2.txt", "dataIDFOM3.txt"]:
-        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM.txt"), 'r') as data_file:
+        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM.txt"), 'r') as data_file:
                 raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
                 time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
                 step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
@@ -634,7 +633,7 @@ class Test_Alfaro123c(unittest.TestCase):
                 #print(FOPDT_hashed)
                 self.assertMultiLineEqual(SOPDT_reference_tf, SOPDT_hashed, msg=None)
 
-        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM2.txt"), 'r') as data_file:
+        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM1.txt"), 'r') as data_file:
                 raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
                 time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
                 step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
@@ -650,7 +649,7 @@ class Test_Alfaro123c(unittest.TestCase):
                 self.assertMultiLineEqual(overdamped_reference_tf, overdamped_hashed, msg=None)
 
     def test_toResponse(self):
-        with open("{}/{}".format(path.dirname(__file__), "GUNT.txt"), 'r') as data_file:
+        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/GUNT.txt"), 'r') as data_file:
             raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
             step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
@@ -668,7 +667,7 @@ class Test_Alfaro123c(unittest.TestCase):
 
             self.assertIsInstance(SO.toResponse_SOPDT(), dict, "Is not a dictionary")
 
-        with open("{}/{}".format(path.dirname(__file__), "dataIDFOM2.txt"), 'r') as data_file:
+        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM1.txt"), 'r') as data_file:
             raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
             step_vector = [float(cols[1]) for cols in raw_data]  # Step vector

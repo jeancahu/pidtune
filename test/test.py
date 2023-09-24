@@ -327,7 +327,9 @@ class Test_Alfaro123c(unittest.TestCase):
                                 resp_vector=resp_vector,)
 
                 controllers_non = FO.tune_controllers()
-                
+
+                self.assertTrue(len(controllers_non) == 0)
+
             except ValueError as e:
                 self.assertEqual("Controller for this time constants not found. Valid interval for this rule is: 0.1 < Tao < 2",str(e))
 
@@ -360,10 +362,12 @@ class Test_Alfaro123c(unittest.TestCase):
 
                     controllers_non2 = SO2.tune_controllers()
                     
+                    self.assertTrue(len(controllers_non2) == 0)
+                    
                 except ValueError as e:
                     self.assertEqual("Controller for this time constants not found. Valid interval for this rule is: 0.1 < Tao < 2",str(e))
 
-        for test_file in ["plant_raw_data/GUNT.txt", "plant_raw_data/dataIDFOM.txt", "plant_raw_data/dataIDFOM2.txt"]:
+        for test_file in ["plant_raw_data/GUNT.txt", "plant_raw_data/dataIDFOM.txt", "plant_raw_data/dataIDFOM2.txt", "plant_raw_data/dataIDFOM.txt"]:
             with open("{}/{}".format(path.dirname(__file__), test_file), 'r') as data_file:
                 raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
                 time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
@@ -376,25 +380,10 @@ class Test_Alfaro123c(unittest.TestCase):
                                     resp_vector=resp_vector,)
 
                     controllers_non_over = over.tune_controllers()
-                    self.assertTrue(bool(controllers_non_over), "Controller list is empty.")
-                except ValueError as e:
-                    self.assertEqual("Model for this value of 'a' time constant not found. Valid values are: 0 < a < 1",str(e))
-
-        with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/dataIDFOM1.txt"), 'r') as data_file:
-                raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
-                time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
-                step_vector = [float(cols[1]) for cols in raw_data]  # Step vector
-                resp_vector = [float(cols[2]) for cols in raw_data]  # Open-loop system response vector
-
-                try:
-                    over2 = overdamped(time_vector=time_vector,
-                                    step_vector=step_vector,
-                                    resp_vector=resp_vector,)
-
-                    controllers_over = over2.tune_controllers()
+                    self.assertTrue(len(controllers_non_over) == 0)
                     
                 except ValueError as e:
-                    self.assertEqual("Controller for this time constants not found. Valid interval for this rule is: 0.1 < Tao < 2",str(e))
+                    self.assertEqual("Model for this value of 'a' time constant not found. Valid values are: 0 < a < 1",str(e))
 
 
     def test_parameters(self):

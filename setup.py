@@ -21,7 +21,9 @@ REQUIRED = [
     'numpy',
     'sympy==1.5.1', # Octave dep
     'pillow',
-    'control'
+    'control',
+    'openpyxl', # Required by Alfaro123c rule
+    'pandas',   # Required by Alfaro123c rule
 ]
 
 # What packages are optional?

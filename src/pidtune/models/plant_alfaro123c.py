@@ -11,6 +11,12 @@ import hashlib
 
 
 class Alfaro123c(): 
+    '''
+    Object: Alfaro123c
+    Main class of Alfaro23c functionalities, that contains 
+    the functions to process the input data and calculates
+    the parameters for the respective models.    
+    '''
     def __init__(self, 
                  time_vector : list = [],
                  step_vector : list = [],
@@ -20,6 +26,12 @@ class Alfaro123c():
                  dc_gain: float = 0, # Gain               (K)
                  dead_time: float = 0,    # Dead time          (L)
                  ):
+        '''
+        Function: __init__
+        This function initialize the variables and vectors
+        to store the input data and start executing the 
+        ALfaro123c process to retrieve the possible models. 
+        '''
         
          ## Identify the plant model
         if (time_constant or dc_gain or dead_time):
@@ -303,6 +315,12 @@ class Alfaro123c():
         
         
     def toDict(self):
+            '''
+            Function: toDict
+            This function creates a JSON dictionary to store
+            the parameters calculated and return the models
+            in a single a defined format.
+            '''
             json = {
                 'T'     : self.time_constant,
                 'K'     : self.dc_gain,
@@ -313,6 +331,14 @@ class Alfaro123c():
             return json
     
     def tune_controllers(self): 
+        '''
+        Function: tune_controllers
+        This function executes four nested for loops to
+        go trough each possibility of controller for each
+        control mode, controller type, MS value, and degree of freedom.
+        This function calls the main function of USORT tunning on each iteration
+        and calculates and returns the possible tunned models.
+        '''
         rule = usort()
 
         controllers = list()
@@ -337,11 +363,22 @@ class Alfaro123c():
     
 
 class FOPDT(Alfaro123c):
+    '''
+    Object: FOPDT
+    Class used to process the respective parameters for first 
+    order plus dead time model.
+    '''
     def __init__(self, 
                 time_vector : list = [],
                 step_vector : list = [],
                 resp_vector : list = [],
                 ):
+        '''
+        Function: __init__
+        This function initialize the variables and vectors
+        to receive from the main class the processed values 
+        and retrieve the respective model. 
+        '''
         # FOPDT constants
         self.FOPDT_time_constant : float = 0
         self.FOPDT_dead_time : float = 0
@@ -354,6 +391,11 @@ class FOPDT(Alfaro123c):
         
 
     def simulation(self):
+        '''
+        Function: simulation
+        This function take the vectors with the model simulated
+        and prints the respective behavior for FOPDT.
+        '''
         plt.figure()
         plt.plot([x + self.dead_time for x in self.t_out_model_simulation], self.youtFOPDT_simulation+self.Yi, label='Model response')
         plt.plot(self.t_simulation, self.u_simulation, label='Input')
@@ -366,6 +408,11 @@ class FOPDT(Alfaro123c):
         plt.show()
 
     def print(self):
+        '''
+        Function: print
+        This mostly a debugging and informative function to
+        print the respective parameter for the model is being executed.
+        '''
         print("25% of the response time:", self.response_at_25percent_time.item())
         print("50% of the response time:", self.response_at_50percent_time.item())
         print("75% of the response time:", self.response_at_75percent_time.item())
@@ -380,6 +427,11 @@ class FOPDT(Alfaro123c):
 
 
     def tf(self):
+        '''
+        Function: tf
+        This function uses the gain and time constant to create the transfer 
+        function with the control library and return it as function's output.
+        '''
         num = [self.dc_gain]  # Numerator
         den = [self.FOPDT_time_constant, 1]  # Denominator
 
@@ -387,7 +439,13 @@ class FOPDT(Alfaro123c):
         tf_FOPDT = ctl.tf(num, den)
         return tf_FOPDT
             
+
     def toResponse(self):
+        '''
+        Function: toResponse 
+        This function stores all the simulation vectors and creates
+        a dictionary to return it as a response output.
+        '''
         result = {
             'time'    :   self.t_out_model_simulation,       # Time vector
             'step'    :   self.u_simulation,       # Step vector
@@ -397,11 +455,22 @@ class FOPDT(Alfaro123c):
         return result
             
 class SOPDT(Alfaro123c):
+    '''
+    Object: SOPDT
+    Class used to process the respective parameters for second 
+    order plus dead time model.
+    '''
     def __init__(self, 
                 time_vector : list = [],
                 step_vector : list = [],
                 resp_vector : list = [],
                 ):
+        '''
+        Function: __init__
+        This function initialize the variables and vectors
+        to receive from the main class the processed values 
+        and retrieve the respective model. 
+        '''
         # FOPDT constants
         self.SOPDT_time_constant : float = 0
         self.SOPDT_dead_time : float = 0
@@ -413,7 +482,11 @@ class SOPDT(Alfaro123c):
         self.time_constant = self.SOPDT_time_constant
 
     def simulation_SOPDT(self):
-        
+        '''
+        Function: simulation_SOPDT
+        This function take the vectors with the model simulated
+        and prints the respective behavior for SOPDT.
+        '''
         plt.figure()
         plt.plot([x + self.dead_time for x in self.t_out_model_simulation], self.youtSOPDT_simulation+self.Yi, label='Model response')
         plt.plot(self.t_simulation, self.u_simulation, label='Input')
@@ -426,6 +499,11 @@ class SOPDT(Alfaro123c):
         plt.show()
 
     def print_SOPDT(self):
+        '''
+        Function: print_SOPDT
+        This mostly a debugging and informative function to
+        print the respective parameter for the model is being executed.
+        '''
         print("*****SOPDT Parameters*****")
         print("SOPDT time constant:", self.time_constant)
         print("SOPDT dead time:", self.dead_time)
@@ -433,6 +511,11 @@ class SOPDT(Alfaro123c):
         print("\n")
 
     def tf_SOPDT(self):
+        '''
+        Function: tf_SOPDT
+        This function uses the gain and time constant to create the transfer 
+        function with the control library and return it as function's output.
+        '''
         a_SOPDT = self.SOPDT_time_constant
         num_SOPDT = [self.dc_gain]
         den_SOPDT = [a_SOPDT*a_SOPDT, 2*a_SOPDT, 1]
@@ -441,6 +524,11 @@ class SOPDT(Alfaro123c):
         return tf_SOPDT
             
     def toResponse_SOPDT(self):
+        '''
+        Function: toResponse_SOPDT 
+        This function stores all the simulation vectors and creates
+        a dictionary to return it as a response output.
+        '''
         result = {
             'time'    :   self.t_out_model_simulation,       # Time vector
             'step'    :   self.u_simulation,       # Step vector
@@ -450,19 +538,27 @@ class SOPDT(Alfaro123c):
         return result
             
 class overdamped(Alfaro123c):
+    '''
+    Object: overdamped
+    Class used to process the respective parameters for overdamped 
+    model.
+    '''
     def __init__(self, 
                 time_vector : list = [],
                 step_vector : list = [],
                 resp_vector : list = [],
                 ):
+        '''
+        Function: __init__
+        This function initialize the variables and vectors
+        to receive from the main class the processed values 
+        and retrieve the respective model. 
+        '''
+
         # FOPDT constants
         self.overdamped_time_constant : float = 0
         self.overdamped_dead_time : float = 0
         super().__init__(time_vector, step_vector, resp_vector)
-
-        '''print(self.a_constant_time)
-        if self.a_constant_time > 1 or self.a_constant_time < 0:
-            raise ValueError(f"Model for this value of 'a' time constant not found. Valid values are: 0 < a < 1")'''
 
         self.a_constant_time = (-0.6240*self.response_at_25percent_time + 0.9866*self.response_at_50percent_time -0.3626*self.response_at_75percent_time)/(0.3533*self.response_at_25percent_time - 0.7036*self.response_at_50percent_time + 0.3503*self.response_at_75percent_time)
         # Calculate Overdamped parameters 
@@ -495,18 +591,28 @@ class overdamped(Alfaro123c):
         self.t_out_model_simulation, self.youtOverdamped_simulation = ctl.forced_response(tf_overdamped, self.t_simulation,  self.input_simulation)
 
     def simulation_overdamped(self):
-            plt.figure()
-            plt.plot([x + self.dead_time for x in self.t_out_model_simulation], self.youtOverdamped_simulation+self.Yi, label='Model response')
-            plt.plot(self.t_simulation, self.u_simulation, label='Input')
-            plt.plot(self.t_simulation, self.y_sys_simulation, label='Plant output')
-            plt.xlabel('Time')
-            plt.ylabel('Output')
-            plt.legend()
-            plt.title('Overdamped Model response')
-            plt.grid(True)
-            plt.show()
+        '''
+        Function: simulation_overdamped
+        This function take the vectors with the model simulated
+        and prints the respective behavior for overdamped.
+        '''
+        plt.figure()
+        plt.plot([x + self.dead_time for x in self.t_out_model_simulation], self.youtOverdamped_simulation+self.Yi, label='Model response')
+        plt.plot(self.t_simulation, self.u_simulation, label='Input')
+        plt.plot(self.t_simulation, self.y_sys_simulation, label='Plant output')
+        plt.xlabel('Time')
+        plt.ylabel('Output')
+        plt.legend()
+        plt.title('Overdamped Model response')
+        plt.grid(True)
+        plt.show()
 
     def print_overdamped(self):
+        '''
+        Function: print_overdamped
+        This mostly a debugging and informative function to
+        print the respective parameter for the model is being executed.
+        '''
         print("25% of the response time:", self.response_at_25percent_time.item())
         print("50% of the response time:", self.response_at_50percent_time.item())
         print("75% of the response time:", self.response_at_75percent_time.item())
@@ -519,6 +625,11 @@ class overdamped(Alfaro123c):
         print("\n")
 
     def tf_overdamped(self):
+        '''
+        Function: tf_overdamped
+        This function uses the gain and time constant to create the transfer 
+        function with the control library and return it as function's output.
+        '''
         Tao3 = self.time_constant
         num_overdamped = [self.dc_gain]
         den_overdamped = [Tao3*Tao3*self.a_constant_time, Tao3*self.a_constant_time + Tao3, 1]
@@ -527,6 +638,11 @@ class overdamped(Alfaro123c):
         return tf_overdamped
             
     def toResponse_overdamped(self):
+        '''
+        Function: toResponse_overdamped
+        This function stores all the simulation vectors and creates
+        a dictionary to return it as a response output.
+        '''
         result = {
             'time'    :   self.t_out_model_simulation,       # Time vector
             'step'    :   self.u_simulation,       # Step vector

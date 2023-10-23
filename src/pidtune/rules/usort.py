@@ -6,8 +6,20 @@ import scipy.signal as signal
 from ..models.controller import Controller
 
 class usort():
+    '''
+    Object: usort
+    Main class to process with the USORT rule the models 
+    indentificated with Alfaro123, and return all the
+    possible tunned controllers.
+    '''
     def __init__(self
                  ):
+        '''
+        Function: __init__
+        This function initialize the variables and vectors
+        to store the input data and also stores the dictionary
+        with all the USORT rule values tables. 
+        '''
         # Global variables for Time values
         self.Ti : float = 0,
         self.Td : float = 0,
@@ -143,42 +155,73 @@ class usort():
 
     # Function to calculate proportional gains
     def calculate_Kp(self, a0, a1, a2, Tao, dc_gain):
-
+        '''
+        Function: calculate_Kp
+        This function calculates and returns the proportional gain.
+        '''
         return (a0 + a1*(Tao**a2))/abs(dc_gain)
 
     # Function to calculate Ti for regulatory control
     def calculate_Ti_regulatory(self, b0, b1, b2, Tao, time_constant):
-
+        '''
+        Function: calculate_Ti_regulatory
+        This function calculates and returns the integral time
+        for regulatory control.
+        '''
         return (b0 + b1*(Tao**b2))*time_constant
 
     # Function to calculate Td for regulatory control
     def calculate_Td_regulatory(self, c0, c1, c2, Tao, time_constant):
-
+        '''
+        Function: calculate_Td_regulatory
+        This function calculates and returns the derivative time
+        for regulatory control.
+        '''
         return (c0 + (c1*Tao**c2))*time_constant
 
     # Function to calculate Ti for servo control
     def calculate_Ti_servo(self, b0, b1, b2, b3, Tao, time_constant):
-
+        '''
+        Function: calculate_Ti_regulatory
+        This function calculates and returns the integral time
+        for servo control.
+        '''
         return ((b0 + (b1*Tao) + b2*(Tao*Tao))/(b3+Tao))*time_constant
 
     # Function to calculate Td for servo control
     def calculate_Td_servo(self, c0, c1, c2, Tao, time_constant):
-
+        '''
+        Function: calculate_Ti_regulatory
+        This function calculates and returns the derivative time
+        for servo control.
+        '''
         return (c0 + c1*(Tao**c2))*time_constant
 
     # Function to calculate the interpolation when a constant is not in the table values
-    def interpolate(self, a_limit_i, a_limit_f, Kp1, Kp2, a_constant): #Cambiar nombres de parametros
-        x1, y1 = a_limit_i, Kp1
-        x2, y2 = a_limit_f, Kp2
-        m= (y2 - y1) / (x2 - x1)
+    def interpolate(self, a_limit_i, a_limit_f, out1, out2, a_constant): 
+        '''
+        Function: interpolate
+        This function calculates and returns the interpolated value
+        between two inputs given, with two gains associated.
+        '''
+        x1, y1 = a_limit_i, out1
+        x2, y2 = a_limit_f, out2
+        m = (y2 - y1) / (x2 - x1)
         b = y1 - m*x1
-        Kp_final = m*a_constant + b
+        out_final = m*a_constant + b
 
-        return Kp_final
+        return out_final
 
     # Function to select the specific controller
     # Calculates the parameters in function of values received
     def interpolated_parameters(self, control_mode, controller_type, constant_a, ms_key, time_constant, Tao, dc_gain, limit_1, limit_2, DoF):
+        '''
+        Function: interpolated_parameters
+        This function is used to make all the interpolations during
+        the system execution. Even when the values are in the table
+        the function is used to return an accurate value.
+        This function returns a dictionary with the tunned parameters.
+        '''
         #Store a constant initial values
         a_initial_values = self.Alfaro123c_rule[control_mode][controller_type][ms_key][str(limit_1)]
         #Store a constant final values
@@ -347,7 +390,14 @@ class usort():
         return cont
 
     def get_value(self, control_mode, controller_type, constant_a, ms_key, time_constant, dc_gain, dead_time, DoF):
-
+        '''
+        Function: get_value
+        This function is the main function that calls all the other functions
+        to implements the interpolation and calculates the parameters.
+        Finally the parameters retrieved from the previous function
+        are stored in the global variable Parameters, to be retrieved
+        for all the interfaces.
+        '''
         # Calculates normalized time
         Tao = dead_time / time_constant
 

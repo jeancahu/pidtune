@@ -265,6 +265,10 @@ class Test_Alfaro123c(unittest.TestCase):
                 "obj Alfaro123c has no \"{}\" required member".format(member))
 
     def test_toDict_method(self):
+        """
+        Plant model has grouped the parameters into a dictionary
+        Raise an error if there is not a dictionary
+        """
         with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/GUNT.txt"), 'r') as data_file:
             raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
@@ -297,6 +301,11 @@ class Test_Alfaro123c(unittest.TestCase):
             
 
     def test_tunning_controllers(self):
+        """
+        The system executes the tunning controllers function.
+        There should be a list of possibe tunned controllers.
+        If there is not a list, raise an error.
+        """
         for test_file in ["plant_raw_data/dataIDFOM.txt", "plant_raw_data/dataIDFOM1.txt", "plant_raw_data/dataIDFOM2.txt"]:
             with open("{}/{}".format(path.dirname(__file__), test_file), 'r') as data_file:
                 raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
@@ -330,6 +339,7 @@ class Test_Alfaro123c(unittest.TestCase):
 
                 self.assertTrue(len(controllers_non) == 0)
 
+            # Expected error when the parameters are not in the interval indicated by USORT rule
             except ValueError as e:
                 self.assertEqual("Controller for this time constants not found. Valid interval for this rule is: 0.1 < Tao < 2",str(e))
 
@@ -381,12 +391,17 @@ class Test_Alfaro123c(unittest.TestCase):
 
                     controllers_non_over = over.tune_controllers()
                     self.assertTrue(len(controllers_non_over) == 0)
-                    
+
+                # Expected error when the parameters are not in the interval indicated by USORT rule    
                 except ValueError as e:
                     self.assertEqual("Model for this value of 'a' time constant not found. Valid values are: 0 < a < 1",str(e))
 
 
     def test_parameters(self):
+        """
+        Plant model parameters should have an error equal or less than 5%
+        Commented results are not meeting the error range
+        """
         def get_bool_parameter(parameter, reference):
             inf_limit = abs(reference) * 0.95
             sup_limit = abs(reference) * 1.05
@@ -593,6 +608,11 @@ class Test_Alfaro123c(unittest.TestCase):
 
 
     def test_transfer_function(self):
+        """
+        Plant model shuld return and accurate transfer function compared
+        with a hardcoded hashed one
+        """
+
         FOPDT_reference_tf = "cc493acb06c972492546636dc2ae5ab19f6a4665acd4da0a9d0251af89a3be5e"
         SOPDT_reference_tf = "6fca589e887b7f5c665046fec6ed2f2672a8575b39b57e2ac2e36eae6bbc2058"
         overdamped_reference_tf = "b16d24d90cc69dd286f9a63037efdcf66bbbdbd628d20e6f107b42f5ba8bdaf3"
@@ -638,6 +658,9 @@ class Test_Alfaro123c(unittest.TestCase):
                 self.assertMultiLineEqual(overdamped_reference_tf, overdamped_hashed, msg=None)
 
     def test_toResponse(self):
+        """
+        Plant model should create a dictionary with the simulation response vectors
+        """
         with open("{}/{}".format(path.dirname(__file__), "plant_raw_data/GUNT.txt"), 'r') as data_file:
             raw_data = [line.strip().split() for line in data_file.read().split('\n') if line]
             time_vector = [float(cols[0]) for cols in raw_data]  # Time vector
